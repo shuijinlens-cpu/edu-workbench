@@ -1,0 +1,20 @@
+{
+  "name": "教培工作台 · 学管端",
+  "short_name": "学管端",
+  "description": "今日课表、排课打卡、学员登记、跟进记录、续费预警",
+  "start_url": "./gh-xueguan.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef1fb",
+  "theme_color": "#4f5dff",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "教培工作台 · 校长端",
+  "short_name": "校长端",
+  "description": "经营看板、生源课时、师资工资、排课、家校反馈",
+  "start_url": "./gh-principal.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef1fb",
+  "theme_color": "#4f5dff",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
