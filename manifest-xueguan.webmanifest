@@ -1,8 +1,8 @@
 {
   "name": "教培工作台 · 学管端",
   "short_name": "学管端",
-  "description": "教培机构学管工作台：今日课表、排课、学员登记、跟进、续费预警",
-  "start_url": "./xueguan.html",
+  "description": "学管工作台：今日打卡、续费提醒、待办清单、家校反馈",
+  "start_url": "./教培学管端.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,6 +10,11 @@
   "theme_color": "#4f5dff",
   "lang": "zh-CN",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }

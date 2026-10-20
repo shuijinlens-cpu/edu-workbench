@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f5dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-status-bar-style" content="black-translucent">
+<title>教培三端工作台 · 入口</title>
+<style>
+  :root{
+    --bg:#eef1fb; --card:#ffffff; --ink:#141a2e; --sub:#5b6577; --line:#e3e8f4;
+    --pri:#4f5dff; --pri2:#e9ecff; --ok:#0fb37a; --ok2:#dff7ee; --warn:#ff8a1f; --warn2:#fff0db; --red:#ff4d61; --red2:#ffe1e6;
+    --grad:linear-gradient(135deg,#5b6bff 0%,#8a5cff 100%);
+    --shadow:0 8px 24px rgba(40,52,120,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+  .wrap{max-width:620px;margin:0 auto;padding:0 14px 28px}
+  .topbar{margin:0 -14px 16px;background:var(--grad);color:#fff;padding:calc(env(safe-area-inset-top) + 26px) 20px 26px;box-shadow:0 6px 18px rgba(79,93,255,.25)}
+  .topbar h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:.5px}
+  .topbar p{margin:0;font-size:13px;opacity:.92}
+  .app{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px;text-decoration:none;color:inherit}
+  .app:active{transform:scale(.99)}
+  .app .ico{flex:0 0 52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+  .app .ico svg{width:26px;height:26px}
+  .app .main{flex:1;min-width:0}
+  .app .t{font-size:16px;font-weight:800}
+  .app .s{font-size:12.5px;color:var(--sub);margin-top:3px;line-height:1.45}
+  .app .go{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--pri)}
+  .i1{background:var(--pri2)}.i2{background:var(--ok2)}.i3{background:var(--warn2)}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+  .sec{font-size:12px;font-weight:800;color:var(--sub);margin:0 0 10px;letter-spacing:1px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--sub);font-size:12px;font-weight:700}
+  td:last-child{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--pri);font-weight:700}
+  ol{margin:0;padding-left:20px;color:var(--sub);font-size:13.5px;line-height:1.9}
+  ol b{color:var(--ink)}
+  .tip{font-size:12.5px;color:var(--sub);background:var(--ok2);border-radius:12px;padding:10px 12px;margin-top:10px;line-height:1.6}
+  .warn{font-size:12.5px;color:#8a4b00;background:var(--warn2);border-radius:12px;padding:10px 12px;margin-top:10px;line-height:1.6}
+  code{background:var(--pri2);color:var(--pri);padding:1px 6px;border-radius:6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>教培三端工作台</h1>
+  <p>校长 · 教师 · 学管　云端同源，多设备实时同步</p>
+</div>
+
+<div class="wrap">
+  <a class="app" href="https://workbuddy.link/p/gDFxxyysOD4M94CCQA4eds">
+    <div class="ico i1"><svg viewBox="0 0 24 24" fill="none" stroke="#4f5dff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg></div>
+    <div class="main">
+      <div class="t">校长端</div>
+      <div class="s">经营看板 · 录入生源/课时 · 师资工资 · 排课 · 家校反馈 · 账号管理</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <a class="app" href="https://workbuddy.link/p/sSpYNQKjrYHPbAMY1ye5Yd">
+    <div class="ico i2"><svg viewBox="0 0 24 24" fill="none" stroke="#0fb37a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M7 11v5c0 1.6 2.2 3 5 3s5-1.4 5-3v-5"/></svg></div>
+    <div class="main">
+      <div class="t">教师端</div>
+      <div class="s">我的课表 · 上课打卡 · 学员跟进 · 课后反馈生成（仅看本人数据）</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <a class="app" href="https://workbuddy.link/p/HMpoSux1zPvYLKwuY1pOuM">
+    <div class="ico i3"><svg viewBox="0 0 24 24" fill="none" stroke="#ff8a1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
+    <div class="main">
+      <div class="t">学管端</div>
+      <div class="s">今日课表 · 排课打卡 · 学员登记 · 跟进记录 · 续费预警</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <div class="card">
+    <div class="sec">登录账号（初始密码，请登录后自行修改）</div>
+    <table>
+      <tr><th>姓名</th><th>登录码</th><th>身份</th></tr>
+      <tr><td>张校长</td><td>888888</td><td>校长</td></tr>
+      <tr><td>王老师</td><td>111111</td><td>老师</td></tr>
+      <tr><td>李老师</td><td>222222</td><td>老师</td></tr>
+      <tr><td>小学管</td><td>333333</td><td>学管</td></tr>
+    </table>
+    <div class="warn">账号由校长端「师资管理」添加教师时一并开通，也可在「账号管理」中修改登录码、停用账号。请务必登录后修改初始登录码。</div>
+  </div>
+
+  <div class="card">
+    <div class="sec">装到手机桌面，当 App 用</div>
+    <ol>
+      <li><b>iPhone：</b>Safari 打开上面任一端口 → 底部「分享」→「添加到主屏幕」</li>
+      <li><b>Android：</b>Chrome 打开 → 右上角菜单 →「安装应用 / 添加到主屏幕」</li>
+      <li>装好后点桌面图标全屏使用；<b>断网时仍可打开</b>（缓存上次数据，联网后自动同步）</li>
+    </ol>
+    <div class="tip">三端数据实时互通：校长端打卡、学管端登记、教师端反馈，任何一端的改动其他端立即可见。云端同步需要浏览器已登录 WorkBuddy 账号（免费注册）；未登录时数据仅存本机。</div>
+  </div>
+</div>
+</body>
+</html>
