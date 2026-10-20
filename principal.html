@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f5dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest-principal.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>校长端 · 教培工作台</title>
+<style>
+  :root{
+    --bg:#eef1fb; --card:#ffffff; --ink:#141a2e; --sub:#5b6577; --line:#e3e8f4;
+    --pri:#4f5dff; --pri2:#e9ecff; --ok:#0fb37a; --ok2:#dff7ee; --warn:#ff8a1f; --warn2:#fff0db; --red:#ff4d61; --red2:#ffe1e6; --teal:#06b6d4;
+    --grad:linear-gradient(135deg,#5b6bff 0%,#8a5cff 100%);
+    --shadow:0 8px 24px rgba(40,52,120,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+  .wrap{max-width:780px;margin:0 auto;padding:14px 14px 96px}
+  .topbar{display:flex;align-items:center;margin:-14px -14px 12px;position:sticky;top:0;z-index:30;background:var(--grad);color:#fff;padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;box-shadow:0 6px 18px rgba(79,93,255,.25)}
+  .topbar h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.5px;color:#fff}
+  .banner{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+  .banner .b{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 13px;min-width:118px;box-shadow:var(--shadow)}
+  .banner .b .v{font-size:18px;font-weight:800;color:var(--ink)}
+  .banner .b .k{font-size:11px;color:var(--sub)}
+  .banner .b.red{border-color:var(--red);background:var(--red2)}.banner .b.red .v{color:var(--red)}
+  .banner .b.ok{border-color:var(--ok);background:var(--ok2)}.banner .b.ok .v{color:var(--ok)}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:15px;margin-bottom:12px}
+  .sec{font-size:12px;font-weight:700;color:var(--sub);margin:4px 2px 10px;letter-spacing:1px}
+  .sec2{font-size:13px;font-weight:700;color:var(--pri);margin:14px 2px 8px}
+  select,input,textarea{font-family:inherit;font-size:16px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink);width:100%}
+  textarea{resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat{background:#f5f7fc;border-radius:14px;padding:12px}
+  .stat.red{background:var(--red2)}
+  .stat.green{background:var(--ok2)}
+  .stat.amber{background:var(--warn2)}
+  .stat .v{font-size:19px;font-weight:800}
+  .stat .k{font-size:11px;color:var(--sub);margin-top:2px}
+  .segwrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .segwrap .sg{font-size:11px;background:var(--pri2);color:var(--pri);border-radius:8px;padding:3px 7px}
+  .segwrap .sg b{font-size:13px}
+  .btn{appearance:none;border:none;border-radius:13px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer;background:var(--pri);color:#fff;min-height:46px;box-shadow:0 4px 12px rgba(79,110,247,.22)}
+  .btn.ghost{background:var(--pri2);color:var(--pri);box-shadow:none}
+  .btn.sm{padding:7px 12px;font-size:13px;min-height:36px;border-radius:10px}
+  .btn.line{background:#fff;color:var(--pri);border:1px solid var(--pri)}
+  .btn.danger{background:#fff;color:var(--red);border:1px solid #ffd0d0}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--pri2);color:var(--pri)}
+  .pill.red{background:#ffe9e6;color:var(--red)}
+  .pill.ok{background:#e6f7ef;color:var(--ok)}
+  .pill.warn{background:#fff1e0;color:var(--warn)}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:#fff}
+  .item .main{flex:1;min-width:0}
+  .item .t{font-weight:600}
+  .item .s{font-size:12px;color:var(--sub);margin-top:2px}
+  .item .tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--pri2);color:var(--pri)}
+  .item .tag.red{background:#ffe9e6;color:var(--red)}
+  .item .tag.ok{background:#e6f7ef;color:var(--ok)}
+  .item .tag.warn{background:#fff1e0;color:var(--warn)}
+  .keymat{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:13px;padding:8px 12px;border-radius:10px;background:#f1f4fb;border:1px solid var(--line);cursor:pointer}
+  .chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .catbox{margin-top:6px}
+  .catbox .ct{font-size:12px;color:var(--sub);margin:8px 0 4px;display:flex;align-items:center;gap:8px}
+  .catbox .ct input{flex:1;font-size:13px;padding:6px 8px}
+  .fbout{white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.7;min-height:120px;color:var(--sub)}
+  .modal{position:fixed;inset:0;background:rgba(20,35,32,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal.on{display:flex}
+  .sheet{background:#fff;width:100%;max-width:780px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+  .sheet h3{margin:0 0 12px;font-size:17px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;overflow-x:auto;padding-bottom:env(safe-area-inset-bottom)}
+  .nav .tab{flex:1 0 auto;text-align:center;padding:8px 4px;font-size:12px;color:var(--sub);cursor:pointer;min-width:54px}
+  .nav .tab .ic{width:24px;height:24px;margin:0 auto 2px;display:block}
+  .nav .tab.on{color:var(--pri);font-weight:800}
+  .nav .tab.on::after{content:"";display:block;width:24px;height:3px;border-radius:3px;background:var(--pri);margin:3px auto 0}
+  .hide{display:none}
+  .empty{text-align:center;color:var(--sub);padding:20px;font-size:14px}
+  .closeX{float:right;font-size:22px;color:var(--sub);cursor:pointer;line-height:1}
+  .inline-form{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
+  .mini{font-size:12px;color:var(--sub)}
+  .ck{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 10px;font-size:14px;cursor:pointer;flex-wrap:wrap}
+  .ck input{width:auto}
+  .ck select{flex:0 0 auto;width:auto;min-width:130px;font-size:14px;padding:6px 8px}
+  .ck .mini{flex-basis:100%}
+  .wbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .wbox .wf{background:#fff;border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+  .wbox .wf .wl{font-size:12px;color:var(--sub)}
+  .alert{background:#fff3f1;border:1px solid #ffd5d0;border-radius:12px;padding:10px 12px;color:var(--red);font-weight:600;font-size:13px}
+  .calc{background:var(--pri2);color:var(--pri);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600}
+  .calc b{color:var(--ok)}
+  .seg2{display:flex;background:#eef1fe;border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
+  .seg2 button{flex:1;border:none;background:transparent;padding:10px;font-size:14px;font-weight:600;color:var(--sub);border-radius:9px;cursor:pointer}
+  .seg2 button.on{background:#fff;color:var(--pri);box-shadow:0 2px 6px rgba(79,110,247,.15)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><h1>校长工作台</h1></div>
+  <div class="banner" id="banner"></div>
+
+  <!-- 经营 -->
+  <section id="tab-biz">
+    <div class="card">
+      <div class="sec">本月校区经营</div>
+      <div class="grid4">
+        <div class="stat green"><div class="v" id="bCash">¥0</div><div class="k">本月营收(实收)</div></div>
+        <div class="stat"><div class="v" id="bConsume">¥0</div><div class="k">本月课消</div></div>
+        <div class="stat red"><div class="v" id="bSalary">¥0</div><div class="k">本月工资</div></div>
+        <div class="stat amber"><div class="v" id="bFixed">¥0</div><div class="k">月固定成本</div></div>
+        <div class="stat"><div class="v" id="bGross">¥0</div><div class="k">毛利</div></div>
+        <div class="stat"><div class="v" id="bNet">¥0</div><div class="k">净利(利润)</div></div>
+        <div class="stat"><div class="v" id="bMargin">0%</div><div class="k">毛利率（分段对比）</div><div class="segwrap" id="bMarginSeg"></div></div>
+        <div class="stat warn"><div class="v" id="bBe">—</div><div class="k">回本线(课时)</div></div>
+      </div>
+      <div class="mini" id="bBeNote" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <div class="sec2">经营参数设置</div>
+      <div class="inline-form">
+        <div class="sec" style="margin:2px 0 6px">课时定价（年级段 × 班型 · 元/课时）</div>
+        <div class="grid3" id="priceMatrix"></div>
+        <div class="sec" style="margin:10px 0 6px">教师课酬默认值（元/课时）</div>
+        <div class="grid2">
+          <div class="field"><label>一对一 默认单价</label><input type="number" id="defWage1v1" placeholder="如 80"></div>
+          <div class="field"><label>班课 默认每生单价</label><input type="number" id="defWageBanke" placeholder="如 40"></div>
+        </div>
+        <div class="sec" style="margin:10px 0 6px">月固定成本</div>
+        <div id="fixedItems"></div>
+        <button class="btn ghost sm" id="addFixed" style="margin-top:4px">+ 添加成本项</button>
+        <button class="btn" id="saveSet" style="margin-top:8px">保存经营参数</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec2">教师本月课时（按年级段·班型贡献的课消）</div>
+      <div id="bizLine"></div>
+    </div>
+    <div class="card">
+      <div class="sec2">收款 / 退费流水（营收统一在录入生源处登记）</div>
+      <div class="list" id="flowList"></div>
+    </div>
+  </section>
+
+  <!-- 学员 + 生源 -->
+  <section id="tab-stu" class="hide">
+    <div class="card">
+      <div class="sec">学员 / 生源管理</div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn ghost sm" id="addNew">+ 新增生源</button>
+        <button class="btn ghost sm" id="addRenew" style="margin-left:6px">老生续费</button>
+      </div>
+      <div class="list" id="stuList"></div>
+    </div>
+    <div class="card">
+      <div class="sec2">招生来源分布</div>
+      <div id="srcBar"></div>
+      <div class="sec2">退费记录（同步至教师模块）</div>
+      <div class="inline-form">
+        <div class="grid2">
+          <div class="field"><label>日期</label><input type="date" id="rfDate"></div>
+          <div class="field"><label>学员</label><select id="rfStu"></select></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>责任老师</label><select id="rfTe"></select></div>
+          <div class="field"><label>金额(¥)</label><input type="number" id="rfAmt"></div>
+        </div>
+        <div class="field"><label>退费原因</label><input id="rfWhy" placeholder="如 转学 / 效果不达预期"></div>
+        <div class="field"><label>流程复盘</label><textarea id="rfReview" placeholder="问题出在哪里" rows="3"></textarea></div>
+        <button class="btn" id="rfAdd" style="margin-top:4px">记录退费</button>
+      </div>
+      <div class="list" id="rfList" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <!-- 教师 -->
+  <section id="tab-teacher" class="hide">
+    <div class="card">
+      <div class="sec">教师本月上课课时</div>
+      <div id="teBar"></div>
+    </div>
+    <div class="card">
+      <div class="sec2">+ 添加教师</div>
+      <div class="inline-form">
+        <div class="grid2">
+          <div class="field"><label>姓名</label><input id="ntName" placeholder="如 张老师"></div>
+          <div class="field"><label>科目</label><input id="ntSubj" placeholder="如 物理"></div>
+          <div class="field"><label>一对一课酬(元/课时)</label><input type="number" id="ntW1" placeholder="如 80"></div>
+          <div class="field"><label>班课课酬(每生·元/课时)</label><input type="number" id="ntWb" placeholder="如 40"></div>
+        </div>
+        <button class="btn" id="ntAdd" style="margin-top:4px">添加教师</button>
+      </div>
+      <div class="sec2">教师列表（点击查看 / 调整课酬 / 退费）</div>
+      <div class="list" id="teList"></div>
+    </div>
+  </section>
+
+  <!-- 全校 -->
+  <section id="tab-all" class="hide">
+    <div class="card">
+      <div class="sec">全校今日课表（校长可给老师打卡）</div>
+      <div class="list" id="allToday"></div>
+    </div>
+    <div class="card">
+      <div class="sec">学员跟进</div>
+      <div class="list" id="allFollow"></div>
+    </div>
+  </section>
+
+  <!-- 排课 -->
+  <section id="tab-sched" class="hide">
+    <div class="card">
+      <div class="sec">排课管理（班课可多选学生合并一条）</div>
+      <button class="btn ghost sm" id="addCourse" style="margin-bottom:8px">+ 排一节课</button>
+      <div class="list" id="courseList"></div>
+    </div>
+  </section>
+
+  <!-- 反馈 -->
+  <section id="tab-fb" class="hide">
+    <div class="card">
+      <div class="sec">家校反馈生成器 · 语料库（各端可增补，三端同步）</div>
+      <div class="field"><label>选择学员</label><select id="fbStu"></select></div>
+      <div class="grid2">
+        <div class="field"><label>上课日期</label><input type="date" id="fbDate"></div>
+        <div class="field"><label>时间段</label><input id="fbTime" placeholder="如 15:30-16:30"></div>
+      </div>
+      <div id="fbMats"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost sm" id="fbClear">清空选择</button>
+        <button class="btn ghost sm" id="fbSave" style="margin-left:6px">保存为跟进</button>
+        <button class="btn" id="fbCopy" style="margin-left:auto">一键复制</button>
+      </div>
+      <div class="fbout" id="fbOut" style="margin-top:10px">选择学员并点选关键词，自动生成反馈文案…</div>
+    </div>
+  </section>
+</div>
+
+<!-- 弹窗：学员（录入生源 / 续费） -->
+<div class="modal" id="mStu"><div class="sheet"><span class="closeX" data-close>×</span><h3>录入生源 / 课时</h3>
+  <div class="seg2" id="stuModeBox">
+    <button class="sgb on" data-mode="new">新增生源</button>
+    <button class="sgb" data-mode="renew">老生续费</button>
+  </div>
+
+  <!-- 新增生源 -->
+  <div id="newBlock">
+    <div class="grid2">
+      <div class="field"><label>姓名</label><input id="sName"></div>
+      <div class="field"><label>年级</label><select id="sGrade"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>家长电话</label><input id="sPhone"></div>
+      <div class="field"><label>报名班型</label><select id="sType"><option value="1v1">一对一</option><option value="班课">班课</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>本次缴费金额(应收 ¥)</label><input type="number" id="sPay" placeholder="如 1500"></div>
+      <div class="field"><label>状态</label><select id="sStatus"><option value="在读">在读</option><option value="线索">线索(仅生源)</option><option value="流失">流失</option></select></div>
+    </div>
+    <div class="calc" id="sHoursCalc">预计课时：—（缴费 ÷ 对应年级班型单价，自动计入剩余课时）</div>
+    <div class="field" style="margin-top:8px"><label>来源（选填）</label><input id="sSrc" placeholder="如 转介绍 / 地推"></div>
+    <div class="sec" style="margin:8px 0 4px">赠送福利（标注一对一 / 班课）</div>
+    <div class="wbox">
+      <div class="wf"><div class="wl">任选课(次) + 班型</div><input type="number" id="sWe" placeholder="0"><select id="sWeType"><option value="1v1">一对一</option><option value="班课" selected>班课</option></select></div>
+      <div class="wf"><div class="wl">押题课(次) + 班型</div><input type="number" id="sWm" placeholder="0"><select id="sWmType"><option value="1v1">一对一</option><option value="班课" selected>班课</option></select></div>
+      <div class="wf"><div class="wl">代金券(¥ · 赠额)</div><input type="number" id="sWv" placeholder="0"></div>
+      <div class="wf"><div class="wl">试卷分析(次·资料)</div><input type="number" id="sWp" placeholder="0"></div>
+      <div class="wf" style="grid-column:1/3"><div class="wl">定制资料(科) + 说明</div><input type="number" id="sWmat" placeholder="0 科" style="margin-bottom:6px"><input id="sWmatd" placeholder="如 数学查缺补漏包"></div>
+    </div>
+    <div class="field"><label>备注</label><input id="sNote"></div>
+  </div>
+
+  <!-- 老生续费 -->
+  <div id="renewBlock" class="hide">
+    <div class="field"><label>选择学员（在读 / 老生）</label><select id="rStu"></select></div>
+    <div class="calc" id="rInfo" style="display:none"></div>
+    <div class="grid2">
+      <div class="field"><label>报名班型</label><select id="rType"><option value="1v1">一对一</option><option value="班课">班课</option></select></div>
+      <div class="field"><label>本次缴费金额(应收 ¥)</label><input type="number" id="rPay" placeholder="如 1500"></div>
+    </div>
+    <label class="ck" id="rVrow" style="display:none"><input type="checkbox" id="rVch"> 使用代金券抵扣（可用 <span id="rVbal">0</span> 元）</label>
+    <div class="calc" id="rCalc">请选择学员并填写缴费金额</div>
+  </div>
+
+  <div class="row"><button class="btn" id="sSave">保存</button><button class="btn danger" id="sDel" style="margin-left:auto;display:none">删除</button></div>
+</div></div>
+
+<!-- 弹窗：教师 -->
+<div class="modal" id="mTeacher"><div class="sheet"><span class="closeX" data-close>×</span><h3>教师详情 / 调整课酬</h3>
+  <div class="field"><label>姓名</label><input id="tName"></div>
+  <div class="grid2">
+    <div class="field"><label>科目</label><input id="tSubj"></div>
+    <div class="field"><label>一对一课酬(元/课时)</label><input type="number" id="tW1"></div>
+    <div class="field"><label>班课课酬(每生·元/课时)</label><input type="number" id="tWb"></div>
+  </div>
+  <div class="field"><label>本月上课</label><input id="tMonthH" disabled></div>
+  <div class="field"><label>本月课酬</label><input id="tMonthPay" disabled></div>
+  <div class="sec2">该老师退费记录</div>
+  <div class="list" id="tRefund" style="margin-bottom:8px"></div>
+  <div class="row"><button class="btn" id="tSave">保存课酬</button></div>
+</div></div>
+
+<!-- 弹窗：排课 -->
+<div class="modal" id="mCourse"><div class="sheet"><span class="closeX" data-close>×</span><h3>排课</h3>
+  <div class="grid2">
+    <div class="field"><label>老师（必选）</label><select id="cTe"></select></div>
+    <div class="field"><label>班型</label><select id="cType"><option value="班课">班课</option><option value="1v1">一对一</option></select></div>
+    <div class="field"><label>日期</label><input type="date" id="cDate"></div>
+    <div class="field"><label>时间</label><input type="time" id="cTime"></div>
+    <div class="field"><label>课时数</label><input type="number" id="cHrs" value="1"></div>
+  </div>
+  <div class="field"><label>选择学员（先勾选学生，再为每人选消耗方式；班型决定可排额度）</label></div>
+  <div class="list" id="cStuBox" style="gap:6px"></div>
+  <div class="field"><label>备注</label><input id="cNote"></div>
+  <div class="row"><button class="btn" id="cSave">保存</button><button class="btn danger" id="cDel" style="margin-left:auto;display:none">删除</button></div>
+</div></div>
+
+<div class="nav" id="nav">
+  <div class="tab on" data-t="biz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>经营</div>
+  <div class="tab" data-t="stu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>学员</div>
+  <div class="tab" data-t="teacher"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg>教师</div>
+  <div class="tab" data-t="all"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>全校</div>
+  <div class="tab" data-t="sched"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>排课</div>
+  <div class="tab" data-t="fb"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>反馈</div>
+</div>
+
+<script>
+/* ===== 共享存储（三端共用键空间） ===== */
+const PREFIX='wb_tx_';
+const SCHEMA=5;
+function load(k,def){try{const v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(k,v){localStorage.setItem(PREFIX+k,JSON.stringify(v));}
+const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function dstr(d){return d.toISOString().slice(0,10);}
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+function addDays(n){const d=new Date(TODAY);d.setDate(d.getDate()+n);return d;}
+function fmtMoney(n){return '¥'+Number(n||0).toLocaleString('zh-CN');}
+function fmtH(n){return Number.isInteger(n)?String(n):(Math.round(n*10)/10).toFixed(1);}
+function monthKey(d){return d.slice(0,7);}
+function schoolYearOf(d){const y=d.getFullYear();const m=d.getMonth()+1;return (m>=9)?y:y-1;}
+const GRADES=['幼班','小一','小二','小三','小四','小五','小六','初一','初二','初三','高一','高二','高三'];
+function gradeSeg(g){
+  if(['幼班','小一','小二','小三','小四','小五','小六'].includes(g))return '小学';
+  if(['初一','初二','初三'].includes(g))return '初中';
+  return '高中';
+}
+function dispGrade(s){
+  if(!s)return '';
+  let idx=GRADES.indexOf(s.grade);if(idx<0)return s.grade||'';
+  const ey=s.enrollYear||schoolYearOf(TODAY);
+  const sy=schoolYearOf(TODAY);
+  let ni=Math.max(0,Math.min(GRADES.length-1,idx+(sy-ey)));
+  return GRADES[ni];
+}
+function teacherLabel(t){return t.name+'（'+t.subject+'）';}
+function emptyWelfare(){return {elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:0,materials:{count:0,desc:''},voucher:0};}
+function defaultPriceMatrix(){return {'小学':{'1v1':120,'班课':60},'初中':{'1v1':150,'班课':75},'高中':{'1v1':180,'班课':90}};}
+
+function defaultFbLib(){return [
+  {key:'content',name:'上课内容',items:['指数函数的性质和图像','指数不等式的解','Unit1-2词汇巩固','语法巩固与易错点','综合练习与讲评','听力专项训练','阅读理解技巧','写作结构讲解','错题复盘','阶段性测试']},
+  {key:'status',name:'上课状态',items:['状态很好跟节奏','认真听课投入','积极互动发言','有些浮躁需提醒','及时调整认真','注意力需加强']},
+  {key:'require',name:'老师要求',items:['完成课后习题','多复习巩固','每天坚持练习一页','整理错题本','加强词汇积累','课前预习下节课','坚持指读任务']},
+  {key:'problem',name:'学生问题',items:['注意力不够集中','单词听写易错','知识遗忘较快','遇到难题易气馁','基础仍需巩固','做题速度偏慢','发音需多练']},
+  {key:'encourage',name:'老师鼓励',items:['状态在线跟节奏','消化吸收不错','表现有进步','继续保持加油','手感保持得好','思路很清晰','比上次有提升']},
+  {key:'measure',name:'措施方法',items:['边做题边回顾','错题重点复盘','增加上册词汇听写','多下功夫练习','分层布置作业','定期小测巩固','家校配合督促']}
+];}
+function getFbLib(){let lib=load('fblib',null);if(!lib){lib=defaultFbLib();save('fblib',lib);}return lib;}
+function addFbWord(catKey,word){word=(word||'').trim();if(!word)return false;const lib=getFbLib();const c=lib.find(x=>x.key===catKey);if(c&&!c.items.includes(word)){c.items.push(word);save('fblib',lib);}return true;}
+
+/* ===== 预置示例（schema 守卫 + 清空重灌） ===== */
+function resetData(){
+  ['teachers','students','courses','tasks','income','refund','settings','followups','fblib','xgTodos'].forEach(k=>localStorage.removeItem(PREFIX+k));
+}
+function seed(){
+  if(load('schema',0)===SCHEMA)return;
+  resetData();
+  const teachers=[
+    {id:'t1',name:'王老师',subject:'数学',wage1v1:80,wageBanke:40},
+    {id:'t2',name:'李老师',subject:'英语',wage1v1:75,wageBanke:38}
+  ];
+  const students=[
+    {id:'s1',name:'小明',grade:'初三',enrollYear:2025,phone:'13800000001',status:'在读',source:'转介绍',note:'',
+      regular:{type:'班课',total:20,left:20},
+      welfare:{elective:{count:1,type:'班课'},mock:{count:1,type:'班课'},paper:2,materials:{count:1,desc:'数学查缺补漏包'},voucher:200}},
+    {id:'s2',name:'小红',grade:'高一',enrollYear:2025,phone:'13800000002',status:'在读',source:'地推',note:'',
+      regular:{type:'1v1',total:8,left:8},
+      welfare:{elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:0,materials:{count:0,desc:''},voucher:0}},
+    {id:'s3',name:'小刚',grade:'初二',enrollYear:2025,phone:'13800000003',status:'在读',source:'线上广告',note:'',
+      regular:{type:'班课',total:3,left:3},
+      welfare:{elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:1,materials:{count:0,desc:''},voucher:0}}
+  ];
+  const courses=[
+    {id:'c1',date:dstr(TODAY),time:'09:00',teacherId:'t1',teacherName:'王老师（数学）',classType:'班课',subject:'数学',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s1',studentName:'小明',consume:'正课'},{studentId:'s3',studentName:'小刚',consume:'正课'}]},
+    {id:'c2',date:dstr(TODAY),time:'15:00',teacherId:'t2',teacherName:'李老师（英语）',classType:'1v1',subject:'英语',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s2',studentName:'小红',consume:'正课'}]},
+    {id:'c3',date:dstr(addDays(-3)),time:'14:00',teacherId:'t1',teacherName:'王老师（数学）',classType:'班课',subject:'数学',duration:1,status:'已上',note:'',type:'正课',students:[{studentId:'s1',studentName:'小明',consume:'正课'},{studentId:'s3',studentName:'小刚',consume:'正课'}]},
+    {id:'c5',date:dstr(addDays(2)),time:'11:00',teacherId:'t2',teacherName:'李老师（英语）',classType:'1v1',subject:'英语',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s2',studentName:'小红',consume:'正课'}]}
+  ];
+  const tasks=[{id:'k1',title:'备好期中复习讲义',toAll:false,teacherIds:['t1'],teacherNames:['王老师（数学）'],due:dstr(addDays(-2)),done:false,createdAt:dstr(addDays(-5)),publisher:'校长'}];
+  const income=[
+    {id:'i1',date:dstr(addDays(-10)),studentId:'s1',studentName:'小明',amount:1500,voucherUsed:0,cash:1500,hours:20,regularType:'班课',type:'新签'},
+    {id:'i2',date:dstr(addDays(-8)),studentId:'s2',studentName:'小红',amount:1440,voucherUsed:0,cash:1440,hours:8,regularType:'1v1',type:'新签'},
+    {id:'i3',date:dstr(addDays(-6)),studentId:'s3',studentName:'小刚',amount:225,voucherUsed:0,cash:225,hours:3,regularType:'班课',type:'新签'}
+  ];
+  const refund=[];
+  const settings={priceMatrix:defaultPriceMatrix(),teacherWageDefault:{'1v1':80,'班课':40},fixedItems:[{name:'房租',amt:5000},{name:'市场',amt:2000},{name:'其他',amt:1000}]};
+  const followups=[
+    {id:'f1',studentId:'s1',studentName:'小明',teacherId:'t1',teacherName:'王老师（数学）',courseId:'c3',date:dstr(addDays(-3)),subject:'数学',
+     content:'指数函数的性质和图像；指数不等式的解',status:'状态很好跟节奏',require:'完成课后习题；多复习巩固',problem:'知识遗忘较快',encourage:'消化吸收不错',measure:'边做题边回顾',text:''}
+  ];
+  save('teachers',teachers);save('students',students);save('courses',courses);save('tasks',tasks);
+  save('income',income);save('refund',refund);save('settings',settings);save('followups',followups);save('fblib',defaultFbLib());
+  save('schema',SCHEMA);
+}
+function ensureSettings(){
+  if(!load('settings',null))save('settings',{priceMatrix:defaultPriceMatrix(),teacherWageDefault:{'1v1':80,'班课':40},fixedItems:[]});
+  getFbLib();
+}
+
+/* ===== 状态 ===== */
+const state={tab:'biz',fbStu:'',fbDate:'',fbTime:'',fbSel:{},editStu:null,editTe:null,editCourse:null,stuMode:'new'};
+
+/* ===== 数据层 ===== */
+function getStudents(){return load('students',[]);}
+function getCourses(){return load('courses',[]);}
+function getTeachers(){return load('teachers',[]);}
+function getTasks(){return load('tasks',[]);}
+function getRefund(){return load('refund',[]);}
+function getIncome(){return load('income',[]);}
+function getSettings(){return load('settings',{priceMatrix:defaultPriceMatrix(),teacherWageDefault:{'1v1':80,'班课':40},fixedItems:[]});}
+function getFollowups(){return load('followups',[]);}
+function studentSubject(s){const c=getCourses().find(x=>(x.students||[]).some(st=>st.studentId===s.id));return c?c.subject:'';}
+
+/* ===== 课消 / 工资 计算 ===== */
+function coursePricePerStudent(c,s){
+  const pm=getSettings().priceMatrix;const seg=gradeSeg(dispGrade(s));const ct=c.classType||'1v1';
+  return (pm[seg]&&pm[seg][ct])||0;
+}
+function courseConsumeBySeg(c){
+  const res={小学:0,初中:0,高中:0};
+  (c.students||[]).forEach(st=>{
+    if(st.consume&&st.consume!=='正课')return; // 福利不计课消
+    const s=getStudents().find(x=>x.id===st.studentId);if(!s)return;
+    res[gradeSeg(dispGrade(s))]+=coursePricePerStudent(c,s)*c.duration;
+  });
+  return res;
+}
+function courseWage(c){
+  const t=getTeachers().find(x=>x.id===c.teacherId);if(!t)return 0;
+  const w1=t.wage1v1||0,wb=t.wageBanke||0;const n=(c.students||[]).length;const dur=c.duration||0;
+  if(c.classType==='1v1')return w1*dur*n;
+  return Math.max(n*wb*dur,w1*dur); // 班课按人头，低于一对一课酬时按一对一发
+}
+
+/* ===== 经营指标计算（营收 = 本月实收 − 本月退费） ===== */
+function last6(){const arr=[];for(let i=5;i>=0;i--){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-i,1);arr.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}return arr;}
+function teacherMonthHours(tid,mk){return getCourses().filter(c=>c.teacherId===tid&&c.status==='已上'&&monthKey(c.date)===mk).reduce((s,c)=>s+c.duration,0);}
+function calcBiz(mk){
+  const set=getSettings();
+  const incomeNow=getIncome().filter(i=>monthKey(i.date)===mk);
+  const cash=incomeNow.reduce((s,i)=>s+(i.cash!=null?i.cash:i.amount),0);
+  const refundNow=getRefund().filter(r=>monthKey(r.date)===mk).reduce((s,r)=>s+r.amount,0);
+  const netCash=cash-refundNow; // 营收：实收 − 退费
+  const mc=getCourses().filter(c=>c.status==='已上'&&monthKey(c.date)===mk);
+  const segConsume={小学:0,初中:0,高中:0};
+  mc.forEach(c=>{const bySeg=courseConsumeBySeg(c);for(const k in bySeg)segConsume[k]+=bySeg[k];});
+  const totalConsume=segConsume.小学+segConsume.初中+segConsume.高中;
+  let wage=0;mc.forEach(c=>wage+=courseWage(c));
+  const fixed=set.fixedItems.reduce((s,f)=>s+(Number(f.amt)||0),0);
+  const gross=totalConsume-wage;
+  const net=gross-fixed;
+  const margin=totalConsume>0?gross/totalConsume:0;
+  const segMargin={};
+  ['小学','初中','高中'].forEach(seg=>{segMargin[seg]=segConsume[seg]>0?((segConsume[seg]-(wage*(segConsume[seg]/totalConsume)))/segConsume[seg]):null;});
+  const consumeHours=mc.reduce((s,c)=>s+c.duration,0);
+  const blendedPrice=consumeHours>0?totalConsume/consumeHours:0;
+  const blendedWage=consumeHours>0?wage/consumeHours:0;
+  const perHour=blendedPrice-blendedWage;
+  const beHours=perHour>0?Math.ceil(fixed/perHour):0;
+  const gap=beHours-consumeHours;
+  const beConsume=beHours*blendedPrice;
+  return {cash:netCash,consume:totalConsume,consumeHours,wage,fixed,gross,net,margin,segMargin,beHours,gap,beConsume,blendedPrice,refundNow};
+}
+
+/* ===== SVG 图表 ===== */
+function lineSVG(months,inc,exp){
+  const W=680,H=200,pl=34,pr=10,pt=14,pb=24;
+  const max=Math.max(1,...inc,...exp);
+  const x=i=>pl+(W-pl-pr)*(i/(months.length-1||1));
+  const y=v=>pt+(H-pt-pb)*(1-v/max);
+  let gi='';
+  for(let g=0;g<=4;g++){const yy=pt+(H-pt-pb)*g/4;gi+=`<line x1="${pl}" y1="${yy}" x2="${W-pr}" y2="${yy}" stroke="#e3e8f4"/><text x="2" y="${yy+3}" font-size="9" fill="#5b6577">${Math.round(max*(1-g/4))}</text>`;}
+  const path=(arr)=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  let xl='';months.forEach((m,i)=>xl+=`<text x="${x(i)}" y="${H-6}" font-size="9" fill="#5b6577" text-anchor="middle">${m.slice(2)}</text>`);
+  const dots=(arr,c)=>arr.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="${c}"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${gi}<path d="${path(inc)}" fill="none" stroke="#0fb37a" stroke-width="2"/><path d="${path(exp)}" fill="none" stroke="#4f5dff" stroke-width="2"/>${dots(inc,'#0fb37a')}${dots(exp,'#4f5dff')}${xl}<text x="${pl}" y="10" font-size="9" fill="#0fb37a">课消</text><text x="${pl+30}" y="10" font-size="9" fill="#4f5dff">收款</text></svg>`;
+}
+function barSVG(items,color){
+  if(!items.length)return '<div class="empty">暂无数据</div>';
+  const W=680,H=200,pl=10,pr=10,pt=14,pb=30;const max=Math.max(1,...items.map(i=>i.value));
+  const gap=(W-pl-pr)/items.length;const bw=gap*0.6;
+  let s=items.map((it,i)=>{const h=(H-pt-pb)*(it.value/max);const x=pl+gap*i+(gap-bw)/2;const y=H-pb-h;return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${color}"/><text x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="11" fill="#141a2e" text-anchor="middle">${it.value}</text><text x="${(x+bw/2).toFixed(1)}" y="${H-10}" font-size="10" fill="#5b6577" text-anchor="middle">${it.label}</text>`;}).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${s}</svg>`;
+}
+
+/* ===== 渲染：横幅 ===== */
+function renderBanner(){
+  const b=document.getElementById('banner');
+  const tasks=getTasks().filter(t=>!t.done&&t.due<dstr(TODAY));
+  const renew=getStudents().filter(s=>s.regular.left<=4&&s.status==='在读');
+  const leads=getStudents().filter(s=>s.status==='线索').length;
+  b.innerHTML=[
+    {v:tasks.length,k:'逾期下发任务',red:tasks.length>0,go:'teacher'},
+    {v:renew.length,k:'续费预警(课时≤4)',red:renew.length>0,go:'stu'},
+    {v:leads,k:'待转化生源',red:leads>0,go:'stu'}
+  ].map(x=>`<div class="b ${x.red?'red':''}" data-go="${x.go}"><div class="v">${x.v}</div><div class="k">${x.k}</div></div>`).join('');
+  b.querySelectorAll('.b').forEach(el=>el.onclick=()=>switchTab(el.dataset.go));
+}
+
+/* ===== 渲染：经营 ===== */
+function renderBiz(){
+  const mk=dstr(TODAY).slice(0,7);
+  const r=calcBiz(mk);
+  document.getElementById('bCash').textContent=fmtMoney(r.cash);
+  document.getElementById('bConsume').textContent=fmtMoney(r.consume);
+  document.getElementById('bSalary').textContent=fmtMoney(r.wage);
+  document.getElementById('bFixed').textContent=fmtMoney(r.fixed);
+  document.getElementById('bGross').textContent=fmtMoney(r.gross);
+  document.getElementById('bNet').textContent=fmtMoney(r.net);
+  document.getElementById('bMargin').textContent=(r.margin*100).toFixed(0)+'%';
+  document.getElementById('bMarginSeg').innerHTML=['小学','初中','高中'].map(seg=>{const m=r.segMargin[seg];return `<span class="sg">${seg} <b>${m==null?'—':(m*100).toFixed(0)+'%'}</b></span>`;}).join('');
+  document.getElementById('bBe').textContent=r.beHours?r.beHours+'节':'—';
+  document.getElementById('bBeNote').textContent=`本月已上 ${r.consumeHours} 节 · 回本线 ${r.beHours} 节 · ${r.gap>0?'还差 '+r.gap+' 节突破盈亏平衡点':'已超出回本线 '+(-r.gap)+' 节'} · 回本课消 ${fmtMoney(r.beConsume)}`+(r.refundNow?(' · 本月退费 '+fmtMoney(r.refundNow)+'，已从营收扣除'):'');
+  const set=getSettings();
+  document.getElementById('priceMatrix').innerHTML=['小学','初中','高中'].map(seg=>['1v1','班课'].map(ct=>`<div class="field"><label>${seg}·${ct==='1v1'?'一对一':'班课'}</label><input type="number" data-seg="${seg}" data-ct="${ct}" value="${set.priceMatrix[seg][ct]}"></div>`).join('')).join('');
+  document.getElementById('defWage1v1').value=set.teacherWageDefault['1v1'];
+  document.getElementById('defWageBanke').value=set.teacherWageDefault['班课'];
+  document.getElementById('fixedItems').innerHTML=set.fixedItems.map((f,i)=>`<div class="row" style="align-items:center;margin-bottom:6px"><input placeholder="项目" value="${f.name||''}" data-fi="${i}" data-fk="name" style="flex:1"><input type="number" placeholder="金额" value="${f.amt||0}" data-fi="${i}" data-fk="amt" style="flex:1"><button class="btn danger sm" data-fdel="${i}">删</button></div>`).join('');
+  document.querySelectorAll('#fixedItems [data-fdel]').forEach(btn=>btn.onclick=()=>{const set2=getSettings();set2.fixedItems.splice(+btn.dataset.fdel,1);save('settings',set2);refreshAll();});
+  const ms=last6();
+  const incS=ms.map(m=>getIncome().filter(i=>monthKey(i.date)===m).reduce((s,i)=>s+(i.cash!=null?i.cash:i.amount),0));
+  const conS=ms.map(m=>{const pm=getSettings().priceMatrix;return getCourses().filter(c=>c.status==='已上'&&monthKey(c.date)===m).reduce((s,c)=>{const bySeg=courseConsumeBySeg(c);return s+bySeg.小学+bySeg.初中+bySeg.高中;},0);});
+  document.getElementById('bizLine').innerHTML=lineSVG(ms,conS,incS);
+  // 收款 / 退费流水
+  const flows=[...getIncome().map(i=>({date:i.date,_t:'收款',cls:'ok',amount:i.cash!=null?i.cash:i.amount,note:(i.type||'')+' · '+(i.hours?fmtH(i.hours)+'课时':'')+(i.voucherUsed?(' · 券抵¥'+i.voucherUsed):'')+' · '+i.studentName})),
+    ...getRefund().map(r=>({date:r.date,_t:'退费',cls:'red',amount:-r.amount,note:r.studentName+' · 责任'+(r.teacherName||'—')+(r.reason?' · '+r.reason:'')}))].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('flowList').innerHTML=flows.length?flows.map(f=>`<div class="item"><div class="main"><div class="t">${f._t} ${fmtMoney(Math.abs(f.amount))}${f._t==='退费'?'（扣减营收）':''}</div><div class="s">${f.date} · ${f.note}</div></div></div><span class="tag ${f.cls}">${f._t==='收款'?'+':'−'}</span></div>`).join(''):'<div class="empty">暂无记录</div>';
+}
+
+/* ===== 渲染：学员 + 生源 ===== */
+function welfareText(w){
+  if(!w)return '无';
+  const p=[];
+  if(w.voucher)p.push('券'+w.voucher);
+  if(w.paper)p.push('试卷'+w.paper);
+  if(w.materials&&w.materials.count)p.push('资料'+w.materials.count);
+  if(w.elective&&w.elective.count)p.push('任选'+w.elective.count+'('+(w.elective.type==='1v1'?'一对一':'班课')+')');
+  if(w.mock&&w.mock.count)p.push('押题'+w.mock.count+'('+(w.mock.type==='1v1'?'一对一':'班课')+')');
+  return p.length?p.join(' · '):'无';
+}
+function renderStu(){
+  const list=document.getElementById('stuList');
+  const stus=getStudents();
+  list.innerHTML=stus.length?stus.map(s=>`<div class="item" data-stu="${s.id}"><div class="main"><div class="t">${s.name} <span class="muted">${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}</span></div><div class="s">剩余正课 ${fmtH(s.regular.left)} · 福利 ${welfareText(s.welfare)} · 来源 ${s.source||'—'} · ${s.status}</div></div><span class="tag ${s.status==='线索'?'warn':s.status==='流失'?'red':'ok'}">${s.status}</span></div>`).join(''):'<div class="empty">暂无学员</div>';
+  list.querySelectorAll('[data-stu]').forEach(el=>el.onclick=()=>openStu('renew',el.dataset.stu));
+  const src={};stus.forEach(s=>{if(s.source)src[s.source]=(src[s.source]||0)+1;});
+  document.getElementById('srcBar').innerHTML=barSVG(Object.keys(src).map(k=>({label:k,value:src[k]})),'#4f6ef7');
+  const rf=getRefund();
+  document.getElementById('rfList').innerHTML=rf.length?rf.map(r=>`<div class="item"><div class="main"><div class="t">${r.studentName} 退费 ${fmtMoney(r.amount)}</div><div class="s">${r.date} · 责任 ${r.teacherName||'—'} · 原因：${r.reason||''}</div><div class="s">复盘：${r.review||'—'}</div></div><span class="tag red">退费</span></div>`).join(''):'<div class="empty">暂无退费记录</div>';
+}
+
+/* ===== 渲染：教师 ===== */
+function renderTeacher(){
+  const ts=getTeachers();const mk=dstr(TODAY).slice(0,7);
+  const bars=ts.map(t=>({label:teacherLabel(t),value:teacherMonthHours(t.id,mk)}));
+  document.getElementById('teBar').innerHTML=barSVG(bars,'#4f6ef7');
+  const tl=document.getElementById('teList');
+  tl.innerHTML=ts.map(t=>{const h=teacherMonthHours(t.id,mk);const pay=h*((t.wage1v1||0));const rf=getRefund().filter(r=>r.teacherId===t.id);return `<div class="item" data-te="${t.id}"><div class="main"><div class="t">${teacherLabel(t)}</div><div class="s">本月 ${h} 课时 · 一对一课酬 ${fmtMoney(t.wage1v1||0)} · 班课每生 ${fmtMoney(t.wageBanke||0)} · 退费 ${rf.length} 笔(${fmtMoney(rf.reduce((s,r)=>s+r.amount,0))})</div></div><span class="tag">详情</span></div>`;}).join('');
+  tl.querySelectorAll('[data-te]').forEach(el=>el.onclick=()=>openTeacher(el.dataset.te));
+}
+
+/* ===== 渲染：全校 ===== */
+function renderAll(){
+  const list=document.getElementById('allToday');
+  const cs=getCourses().filter(c=>c.date===dstr(TODAY)).sort((a,b)=>a.time.localeCompare(b.time));
+  if(!cs.length)list.innerHTML='<div class="empty">今天全校没有排课</div>';
+  else list.innerHTML=cs.map(c=>`<div class="item"><div class="main"><div class="t">${c.time} · ${(c.students||[]).map(st=>st.studentName).join('、')}（${c.subject}）</div><div class="s">${c.teacherName} · ${c.classType==='1v1'?'一对一':'班课'} · ${c.duration}课时${c.type==='福利课'?' · 福利课':''}</div></div>${c.status==='已上'?'<span class="tag ok">已上</span>':'<button class="btn sm" data-clock="'+c.id+'">校长打卡</button>'}</div>`).join('');
+  list.querySelectorAll('[data-clock]').forEach(b=>b.onclick=()=>setCourseDone(b.dataset.clock));
+  const fl=document.getElementById('allFollow');
+  const fs=getFollowups().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!fs.length)fl.innerHTML='<div class="empty">暂无教师反馈跟进</div>';
+  else fl.innerHTML=fs.map(f=>{
+    const parts=[];
+    if(f.require)parts.push('<b>要求：</b>'+f.require);
+    if(f.problem)parts.push('<b>问题：</b>'+f.problem);
+    if(f.measure)parts.push('<b>措施：</b>'+f.measure);
+    const body=parts.length?parts.join('；'):(f.text||'');
+    return `<div class="item" style="flex-direction:column;align-items:flex-start"><div class="main" style="width:100%"><div class="t">${f.studentName} · ${f.teacherName} · ${f.date}</div><div class="s" style="margin-top:6px">${body}</div></div></div>`;
+  }).join('');
+}
+
+/* ===== 渲染：排课 ===== */
+function courseLabel(c){
+  const names=(c.students||[]).map(st=>st.studentName).join('、');
+  return `${c.date} ${c.time} · ${names}（${c.subject}）`;
+}
+function renderSched(){
+  const list=document.getElementById('courseList');
+  const cs=getCourses().slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!cs.length)list.innerHTML='<div class="empty">暂无排课</div>';
+  else list.innerHTML=cs.map(c=>`<div class="item" data-c="${c.id}"><div class="main"><div class="t">${courseLabel(c)}</div><div class="s">${c.teacherName} · ${c.classType==='1v1'?'一对一':'班课'} · ${c.duration}课时 · ${c.type==='福利课'?'福利课':'正课'} · ${c.status}</div></div><span class="tag">编辑</span></div>`).join('');
+  list.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>openCourse(el.dataset.c));
+}
+
+/* ===== 渲染：反馈 ===== */
+function renderFb(){
+  const sel=document.getElementById('fbStu');
+  const stus=getStudents();
+  sel.innerHTML='<option value="">-- 请选择学员 --</option>'+stus.map(s=>`<option value="${s.id}">${s.name}（${dispGrade(s)}）</option>`).join('');
+  sel.value=state.fbStu;
+  sel.onchange=()=>{state.fbStu=sel.value;state.fbSel={};refreshAll();};
+  const lib=getFbLib();
+  const box=document.getElementById('fbMats');
+  box.innerHTML=lib.map(c=>`<div class="catbox"><div class="ct">${c.name}<input placeholder="增补关键词后点 +" data-addcat="${c.key}"><button class="btn ghost sm" data-addbtn="${c.key}">+</button></div><div class="keymat">${c.items.map((it)=>{const k=c.key+'|'+it;const on=state.fbSel[k];return `<span class="chip ${on?'on':''}" data-k="${k}">${it}</span>`;}).join('')}</div></div>`).join('');
+  box.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const k=ch.dataset.k;state.fbSel[k]=!state.fbSel[k];refreshAll();});
+  box.querySelectorAll('[data-addbtn]').forEach(b=>b.onclick=()=>{const cat=b.dataset.addbtn;const inp=box.querySelector('[data-addcat="'+cat+'"]');if(addFbWord(cat,inp.value)){inp.value='';refreshAll();}});
+}
+function fbGroups(){const g={content:[],status:[],require:[],problem:[],encourage:[],measure:[]};Object.keys(state.fbSel).forEach(k=>{if(state.fbSel[k]){const idx=k.indexOf('|');const cat=k.slice(0,idx);const it=k.slice(idx+1);g[cat].push(it);}});return g;}
+function genFeedback(s,g){
+  const name=s.name;const subj=studentSubject(s)||'本课';const L=[];
+  L.push('家长您好！今天【'+subj+'】的课堂情况跟您同步一下～');
+  if(g.content.length)L.push('今天'+name+'主要学习了：'+g.content.join('、')+'。');
+  const hasProb=g.problem.length>0,hasEnc=g.encourage.length>0,hasStatus=g.status.length>0;
+  let mood = hasProb&&!hasEnc?'attn':(hasProb&&hasEnc?'mix':'good');
+  let para='';
+  if(hasStatus)para+='课堂上'+g.status.join('，')+'；';
+  if(mood==='good'){para+=(hasEnc?g.encourage.join('，')+'，整体状态很棒。':'整体表现稳定在线。');}
+  else if(mood==='mix'){para+='有亮点也有要打磨的地方——'+g.encourage.join('，')+'，不过'+g.problem.join('，')+'，这一块我们多花点心思。';}
+  else{para+='有个小地方需要留意：'+g.problem.join('，')+'，相信慢慢能调整过来。';}
+  if(para)L.push(para);
+  if(g.require.length)L.push('课后麻烦提醒孩子：'+g.require.join('；')+'。');
+  if(g.measure.length)L.push('接下来我会'+g.measure.join('；')+'，家校一起帮孩子巩固。');
+  const closings={good:['为'+name+'的进步点赞，继续加油！🌟','今天状态在线，期待下节课更精彩～💪'],mix:['一步一个脚印，'+name+'会越来越稳的，我们一起加油！🌱'],attn:['调整后相信会有改善，辛苦家长一起配合，谢谢！🤝']};
+  L.push(closings[mood][0]);
+  return L.join('\n');
+}
+function renderFbOut(){
+  const out=document.getElementById('fbOut');
+  if(!state.fbStu){out.style.color='var(--sub)';out.textContent='选择学员并点选关键词，自动生成反馈文案…';return;}
+  const s=getStudents().find(x=>x.id===state.fbStu);
+  const g=fbGroups();
+  out.style.color='var(--ink)';
+  out.textContent=genFeedback(s,g);
+}
+
+/* ===== 表单初始化 ===== */
+function fillSelects(){
+  const tdy=dstr(TODAY);
+  ['rfDate','cDate'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=tdy;});
+  const rfStu=document.getElementById('rfStu');if(rfStu)rfStu.innerHTML=getStudents().map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  const rfTe=document.getElementById('rfTe');if(rfTe)rfTe.innerHTML=getTeachers().map(t=>`<option value="${t.id}">${teacherLabel(t)}</option>`).join('');
+  const cTime=document.getElementById('cTime');if(cTime&&!cTime.value)cTime.value='09:00';
+  const fbDate=document.getElementById('fbDate');if(fbDate&&!fbDate.value)fbDate.value=tdy;
+}
+
+/* ===== 排课学生选择（先选学生 → 班型决定可排额度；资料仅展示） ===== */
+function renderCourseStuBox(){
+  const box=document.getElementById('cStuBox');
+  const type=document.getElementById('cType').value;
+  const stus=getStudents();
+  box.innerHTML=stus.map(s=>{
+    const w=s.welfare||emptyWelfare();
+    const opts=[];
+    if((s.regular.type===type)&&(s.regular.left||0)>0)opts.push('<option value="正课">正课('+fmtH(s.regular.left)+'次)</option>');
+    if((w.elective.type===type)&&(w.elective.count||0)>0)opts.push('<option value="elective">任选课('+w.elective.count+'次)</option>');
+    if((w.mock.type===type)&&(w.mock.count||0)>0)opts.push('<option value="mock">押题课('+w.mock.count+'次)</option>');
+    if(!opts.length)opts.push('<option value="正课">无可用额度</option>');
+    const mat=[];if(w.paper)mat.push('试卷分析'+w.paper+'次');if(w.materials&&w.materials.count)mat.push('定制资料'+w.materials.count+'科'+(w.materials.desc?('·'+w.materials.desc):''));
+    return `<label class="ck"><input type="checkbox" data-sid="${s.id}" data-sname="${s.name}"> ${s.name}（${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}·余${fmtH(s.regular.left)}）`
+      +`<select data-csid="${s.id}">${opts.join('')}</select>`
+      +(mat.length?`<span class="mini">已发资料：${mat.join('、')}</span>`:'')
+      +`</label>`;
+  }).join('');
+}
+
+/* ===== 弹窗：学员录入 / 续费 ===== */
+function setStuMode(m){
+  state.stuMode=m;
+  document.querySelectorAll('#stuModeBox .sgb').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  document.getElementById('newBlock').classList.toggle('hide',m!=='new');
+  document.getElementById('renewBlock').classList.toggle('hide',m!=='renew');
+  if(m==='renew'){buildRenewSelect();}
+}
+function buildRenewSelect(){
+  const sel=document.getElementById('rStu');
+  sel.innerHTML='<option value="">-- 选择学员 --</option>'+getStudents().map(s=>`<option value="${s.id}">${s.name}（${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}·余${fmtH(s.regular.left)}）</option>`).join('');
+  sel.onchange=()=>onRenewStudent(sel.value);
+  document.getElementById('rInfo').style.display='none';
+  document.getElementById('rVrow').style.display='none';
+  document.getElementById('rCalc').textContent='请选择学员并填写缴费金额';
+  state.editStu=null;
+  document.getElementById('sDel').style.display='none';
+}
+function onRenewStudent(id){
+  state.editStu=id||null;
+  document.getElementById('sDel').style.display=id?'block':'none';
+  if(!id){document.getElementById('rInfo').style.display='none';document.getElementById('rVrow').style.display='none';document.getElementById('rCalc').textContent='请选择学员并填写缴费金额';return;}
+  const s=getStudents().find(x=>x.id===id);
+  const w=s.welfare||emptyWelfare();
+  document.getElementById('rInfo').style.display='block';
+  document.getElementById('rInfo').innerHTML=`基本信息：${s.name} · ${dispGrade(s)} · ${s.regular.type==='1v1'?'一对一':'班课'} · 剩余正课 <b>${fmtH(s.regular.left)}</b> 次 · 代金券余额 <b>${w.voucher||0}</b> 元`;
+  document.getElementById('rType').value=s.regular.type;
+  const vrow=document.getElementById('rVrow');
+  if((w.voucher||0)>0){vrow.style.display='flex';document.getElementById('rVbal').textContent=w.voucher;document.getElementById('rVch').checked=false;}
+  else vrow.style.display='none';
+  updateStuCalc();
+}
+function openStu(mode,id){
+  state.stuMode=mode||'new';state.editStu=id||null;
+  setStuMode(state.stuMode);
+  // 重置新增块
+  document.getElementById('sName').value='';
+  const gsel=document.getElementById('sGrade');gsel.innerHTML=GRADES.map(g=>`<option>${g}</option>`).join('');
+  document.getElementById('sPhone').value='';
+  document.getElementById('sType').value='班课';
+  document.getElementById('sPay').value='';
+  document.getElementById('sStatus').value='在读';
+  document.getElementById('sSrc').value='';
+  document.getElementById('sWe').value=0;document.getElementById('sWeType').value='班课';
+  document.getElementById('sWm').value=0;document.getElementById('sWmType').value='班课';
+  document.getElementById('sWv').value=0;document.getElementById('sWp').value=0;
+  document.getElementById('sWmat').value=0;document.getElementById('sWmatd').value='';
+  document.getElementById('sNote').value='';
+  if(state.stuMode==='renew'){buildRenewSelect();if(id)onRenewStudent(id);}
+  else{updateStuCalc();document.getElementById('sDel').style.display='none';}
+  document.getElementById('mStu').classList.add('on');
+}
+function updateStuCalc(){
+  if(state.stuMode==='renew'){
+    const s=getStudents().find(x=>x.id===state.editStu);
+    if(!s){document.getElementById('rCalc').textContent='请选择学员并填写缴费金额';return;}
+    const type=document.getElementById('rType').value;
+    const pay=+document.getElementById('rPay').value||0;
+    const w=s.welfare||emptyWelfare();const voucher=w.voucher||0;
+    const chk=document.getElementById('rVch');
+    const useV=chk&&chk.checked&&voucher>0;
+    const vUsed=useV?Math.min(voucher,pay):0;
+    const cash=Math.max(0,pay-vUsed);
+    const price=(getSettings().priceMatrix[gradeSeg(s.grade)]||{})[type]||0;
+    const h=price>0?pay/price:0;
+    document.getElementById('rCalc').innerHTML = pay>0
+      ? `应收 ¥${pay} · 代金券抵扣 <b>¥${vUsed}</b> · 实收 <b>¥${cash}</b> · 预计课时 <b>${fmtH(h)}</b> 次`
+      : '请输入缴费金额（应收）';
+  }else{
+    const grade=document.getElementById('sGrade').value;const type=document.getElementById('sType').value;const pay=+document.getElementById('sPay').value||0;
+    const price=(getSettings().priceMatrix[gradeSeg(grade)]||{})[type]||0;
+    const h=price>0?pay/price:0;
+    document.getElementById('sHoursCalc').textContent= pay>0 ? ('预计课时：'+fmtH(h)+' 次（¥'+pay+' ÷ ¥'+price+'/课时，将计入剩余课时）') : '预计课时：—（缴费 ÷ 对应年级班型单价，自动计入剩余课时）';
+  }
+}
+function openTeacher(id){
+  const t=getTeachers().find(x=>x.id===id);state.editTe=id;
+  document.getElementById('tName').value=t.name;document.getElementById('tSubj').value=t.subject;
+  document.getElementById('tW1').value=t.wage1v1;document.getElementById('tWb').value=t.wageBanke;
+  const mk=dstr(TODAY).slice(0,7);const h=teacherMonthHours(t.id,mk);
+  document.getElementById('tMonthH').value=h+' 课时';
+  document.getElementById('tMonthPay').value=fmtMoney(h*(t.wage1v1||0));
+  const rf=getRefund().filter(r=>r.teacherId===t.id);
+  document.getElementById('tRefund').innerHTML=rf.length?rf.map(r=>`<div class="item"><div class="main"><div class="t">${r.studentName} ${fmtMoney(r.amount)}</div><div class="s">${r.date} · 原因：${r.reason||''} · 复盘：${r.review||'—'}</div></div></div>`).join(''):'<div class="empty">该老师暂无退费</div>';
+  document.getElementById('mTeacher').classList.add('on');
+}
+function openCourse(id){
+  state.editCourse=id||null;
+  const c=id?getCourses().find(x=>x.id===id):{};
+  const cTe=document.getElementById('cTe');
+  cTe.innerHTML=getTeachers().map(t=>`<option value="${t.id}">${teacherLabel(t)}</option>`).join('');
+  document.getElementById('cDate').value=c.date||dstr(TODAY);
+  document.getElementById('cTime').value=c.time||'09:00';
+  document.getElementById('cType').value=c.classType||'班课';
+  if(c.teacherId&&[...cTe.options].some(o=>o.value===c.teacherId))cTe.value=c.teacherId;
+  document.getElementById('cHrs').value=c.duration||1;
+  document.getElementById('cNote').value=c.note||'';
+  renderCourseStuBox();
+  const box=document.getElementById('cStuBox');
+  if(c.students){box.querySelectorAll('input[data-sid]').forEach(cb=>{const st=c.students.find(x=>x.studentId===cb.dataset.sid);if(st){cb.checked=true;const sel=box.querySelector('select[data-csid="'+cb.dataset.sid+'"]');if(sel&&(st.consume==='正课'||st.consume==='elective'||st.consume==='mock'))sel.value=st.consume;}});}
+  document.getElementById('cDel').style.display=id?'block':'none';
+  document.getElementById('mCourse').classList.add('on');
+}
+function setCourseDone(id){
+  const cs=getCourses();const i=cs.findIndex(x=>x.id===id);if(i<0)return;
+  if(cs[i].status!=='已上'){cs[i].status='已上';deductForCourse(cs[i]);save('courses',cs);}
+  refreshAll();
+}
+function deductForCourse(c){
+  const stus=getStudents();let changed=false;
+  (c.students||[]).forEach(st=>{
+    const i=stus.findIndex(x=>x.id===st.studentId);if(i<0)return;
+    const consume=st.consume||'正课';
+    if(consume==='正课'){stus[i].regular.left=(stus[i].regular.left||0)-c.duration;}
+    else if(consume==='elective'){stus[i].welfare=stus[i].welfare||emptyWelfare();stus[i].welfare.elective.count=Math.max(0,(stus[i].welfare.elective.count||0)-c.duration);}
+    else if(consume==='mock'){stus[i].welfare=stus[i].welfare||emptyWelfare();stus[i].welfare.mock.count=Math.max(0,(stus[i].welfare.mock.count||0)-c.duration);}
+    changed=true;
+  });
+  if(changed)save('students',stus);
+}
+
+/* ===== 统一刷新 ===== */
+function refreshAll(){
+  renderBanner();
+  if(state.tab==='biz'){fillSelects();renderBiz();}
+  else if(state.tab==='stu'){fillSelects();renderStu();}
+  else if(state.tab==='teacher'){renderTeacher();}
+  else if(state.tab==='all'){renderAll();}
+  else if(state.tab==='sched'){fillSelects();renderSched();}
+  else if(state.tab==='fb'){fillSelects();renderFb();renderFbOut();}
+}
+
+/* ===== Tab 切换 ===== */
+function switchTab(t){
+  state.tab=t;
+  document.querySelectorAll('#nav .tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
+  ['biz','stu','teacher','all','sched','fb'].forEach(n=>document.getElementById('tab-'+n).classList.toggle('hide',n!==t));
+  refreshAll();
+}
+
+/* ===== 事件绑定 ===== */
+function bind(){
+  document.querySelectorAll('#nav .tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.t));
+  document.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>x.closest('.modal').classList.remove('on'));
+  document.querySelectorAll('#stuModeBox .sgb').forEach(b=>b.onclick=()=>setStuMode(b.dataset.mode));
+  document.getElementById('addFixed').onclick=()=>{const set=getSettings();set.fixedItems.push({name:'',amt:0});save('settings',set);refreshAll();};
+  document.getElementById('fixedItems').addEventListener('input',e=>{const i=e.target.dataset.fi,k=e.target.dataset.fk;if(i===undefined)return;const set=getSettings();if(k==='amt')set.fixedItems[+i].amt=+e.target.value||0;else set.fixedItems[+i].name=e.target.value;save('settings',set);});
+  document.getElementById('saveSet').onclick=()=>{
+    const set=getSettings();
+    document.querySelectorAll('#priceMatrix input[data-seg]').forEach(inp=>{set.priceMatrix[inp.dataset.seg][inp.dataset.ct]=+inp.value||0;});
+    set.teacherWageDefault['1v1']=+document.getElementById('defWage1v1').value||0;
+    set.teacherWageDefault['班课']=+document.getElementById('defWageBanke').value||0;
+    save('settings',set);refreshAll();alert('经营参数已保存');
+  };
+  document.getElementById('addNew').onclick=()=>openStu('new',null);
+  document.getElementById('addRenew').onclick=()=>openStu('renew',null);
+  ['sPay','sType','sGrade'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',updateStuCalc);el.addEventListener('change',updateStuCalc);}});
+  ['rPay','rType'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',updateStuCalc);el.addEventListener('change',updateStuCalc);}});
+  const rVch=document.getElementById('rVch');if(rVch)rVch.addEventListener('change',updateStuCalc);
+  document.getElementById('sSave').onclick=sSave;
+  document.getElementById('sDel').onclick=()=>{if(!state.editStu)return;if(!confirm('确认删除该学员？'))return;save('students',getStudents().filter(s=>s.id!==state.editStu));document.getElementById('mStu').classList.remove('on');refreshAll();};
+  document.getElementById('rfAdd').onclick=()=>{
+    const sid=document.getElementById('rfStu').value;const tid=document.getElementById('rfTe').value;const amt=+document.getElementById('rfAmt').value;
+    if(!sid||!tid||!amt){alert('请选择学员、责任老师并填写金额');return;}
+    const t=getTeachers().find(x=>x.id===tid);
+    const rf=getRefund();rf.push({id:uid(),date:document.getElementById('rfDate').value,studentId:sid,studentName:getStudents().find(s=>s.id===sid).name,teacherId:tid,teacherName:teacherLabel(t),amount:amt,reason:document.getElementById('rfWhy').value,review:document.getElementById('rfReview').value,note:''});save('refund',rf);refreshAll();alert('已记录退费，教师模块将同步显示，并从本月营收扣除');
+  };
+  document.getElementById('ntAdd').onclick=()=>{
+    const name=document.getElementById('ntName').value,subj=document.getElementById('ntSubj').value,w1=+document.getElementById('ntW1').value||0,wb=+document.getElementById('ntWb').value||0;
+    if(!name||!subj){alert('请填写姓名和科目');return;}
+    const ts=getTeachers();ts.push({id:uid(),name,subject:subj,wage1v1:w1,wageBanke:wb});save('teachers',ts);refreshAll();alert('已添加教师');
+  };
+  document.getElementById('tSave').onclick=()=>{
+    const ts=getTeachers();const i=ts.findIndex(t=>t.id===state.editTe);if(i<0)return;
+    ts[i].name=document.getElementById('tName').value;ts[i].subject=document.getElementById('tSubj').value;ts[i].wage1v1=+document.getElementById('tW1').value||0;ts[i].wageBanke=+document.getElementById('tWb').value||0;
+    save('teachers',ts);document.getElementById('mTeacher').classList.remove('on');refreshAll();alert('课酬已更新');
+  };
+  document.getElementById('addCourse').onclick=()=>openCourse(null);
+  document.getElementById('cType').onchange=()=>renderCourseStuBox();
+  document.getElementById('cSave').onclick=()=>{
+    const tid=document.getElementById('cTe').value;
+    if(!tid){alert('请选择老师');return;}
+    const type=document.getElementById('cType').value;
+    const box=document.getElementById('cStuBox');
+    const checks=[...box.querySelectorAll('input[data-sid]:checked')];
+    if(!checks.length){alert('请至少勾选一名学员');return;}
+    if(type==='1v1'&&checks.length>1){alert('一对一只能选 1 名学生');return;}
+    const students=checks.map(cb=>{const sel=box.querySelector('select[data-csid="'+cb.dataset.sid+'"]');const consume=sel?sel.value:'正课';return {studentId:cb.dataset.sid,studentName:cb.dataset.sname,consume};});
+    const anyWelfare=students.some(st=>st.consume!=='正课');
+    const t=getTeachers().find(x=>x.id===tid);
+    const cs=getCourses();
+    const rec={date:document.getElementById('cDate').value,time:document.getElementById('cTime').value,teacherId:tid,teacherName:teacherLabel(t),classType:type,subject:t.subject,duration:+document.getElementById('cHrs').value||1,status:'未上',note:document.getElementById('cNote').value,type:anyWelfare?'福利课':'正课',students};
+    if(state.editCourse){const i=cs.findIndex(c=>c.id===state.editCourse);cs[i]={...cs[i],...rec};}else cs.push({id:uid(),...rec});
+    save('courses',cs);document.getElementById('mCourse').classList.remove('on');refreshAll();alert('排课已保存（班课已合并为一条）');
+  };
+  document.getElementById('cDel').onclick=()=>{if(!state.editCourse)return;if(!confirm('确认删除该排课？'))return;save('courses',getCourses().filter(c=>c.id!==state.editCourse));document.getElementById('mCourse').classList.remove('on');refreshAll();};
+  document.getElementById('fbDate').onchange=()=>{state.fbDate=document.getElementById('fbDate').value;refreshAll();};
+  document.getElementById('fbTime').oninput=()=>{state.fbTime=document.getElementById('fbTime').value;refreshAll();};
+  document.getElementById('fbClear').onclick=()=>{state.fbSel={};refreshAll();};
+  document.getElementById('fbCopy').onclick=()=>{if(!state.fbStu){alert('请先选择学员');return;}const txt=document.getElementById('fbOut').textContent;navigator.clipboard?navigator.clipboard.writeText(txt).then(()=>alert('已复制反馈文案')):alert(txt);};
+  document.getElementById('fbSave').onclick=()=>{
+    if(!state.fbStu){alert('请先选择学员');return;}
+    const s=getStudents().find(x=>x.id===state.fbStu);const g=fbGroups();
+    const fs=getFollowups();
+    fs.push({id:uid(),studentId:s.id,studentName:s.name,teacherId:'',teacherName:'',courseId:'',date:state.fbDate||dstr(TODAY),subject:studentSubject(s),content:g.content.join('；'),status:g.status.join('；'),require:g.require.join('、'),problem:g.problem.join('、'),encourage:g.encourage.join('、'),measure:g.measure.join('、'),text:document.getElementById('fbOut').textContent});
+    save('followups',fs);alert('已保存为跟进记录');
+  };
+}
+window.addEventListener('storage',e=>{if(e.key&&e.key.indexOf('wb_tx_')===0){refreshAll();}});
+
+/* ===== 保存：录入生源 / 续费 ===== */
+function sSave(){
+  if(state.stuMode==='renew'){
+    const s=getStudents().find(x=>x.id===state.editStu);
+    if(!s){alert('请选择学员');return;}
+    const type=document.getElementById('rType').value;
+    const pay=+document.getElementById('rPay').value||0;
+    if(!pay){alert('请填写缴费金额');return;}
+    const w=s.welfare||emptyWelfare();const voucher=w.voucher||0;
+    const chk=document.getElementById('rVch');const useV=chk&&chk.checked&&voucher>0;
+    const vUsed=useV?Math.min(voucher,pay):0;const cash=Math.max(0,pay-vUsed);
+    const price=(getSettings().priceMatrix[gradeSeg(dispGrade(s))]||{})[type]||0;
+    const hours=price>0?pay/price:0;
+    s.regular.type=type;s.regular.left+=hours;s.regular.total+=hours;
+    if(vUsed>0)s.welfare.voucher=Math.max(0,voucher-vUsed);
+    const stus=getStudents();const i=stus.findIndex(x=>x.id===s.id);stus[i]=s;save('students',stus);
+    const inc=getIncome();inc.push({id:uid(),date:dstr(TODAY),studentId:s.id,studentName:s.name,amount:pay,voucherUsed:vUsed,cash, hours, regularType:type, type:'续费'});save('income',inc);
+    document.getElementById('mStu').classList.remove('on');refreshAll();
+    alert('已记录续费，课时已累加'+(vUsed>0?('，代金券抵扣 ¥'+vUsed+'，实收 ¥'+cash):''));
+  }else{
+    const name=document.getElementById('sName').value.trim();
+    if(!name){alert('请填写姓名');return;}
+    const grade=document.getElementById('sGrade').value;
+    const type=document.getElementById('sType').value;const pay=+document.getElementById('sPay').value||0;
+    const price=(getSettings().priceMatrix[gradeSeg(grade)]||{})[type]||0;const hours=price>0?pay/price:0;
+    const welfare={elective:{count:+document.getElementById('sWe').value||0,type:document.getElementById('sWeType').value},mock:{count:+document.getElementById('sWm').value||0,type:document.getElementById('sWmType').value},paper:+document.getElementById('sWp').value||0,materials:{count:+document.getElementById('sWmat').value||0,desc:document.getElementById('sWmatd').value},voucher:+document.getElementById('sWv').value||0};
+    const o={id:uid(),name,grade,enrollYear:schoolYearOf(TODAY),phone:document.getElementById('sPhone').value,status:document.getElementById('sStatus').value,source:document.getElementById('sSrc').value,note:document.getElementById('sNote').value,regular:{type,total:hours,left:hours},welfare};
+    const stus=getStudents();stus.push(o);save('students',stus);
+    if(pay>0){const inc=getIncome();inc.push({id:uid(),date:dstr(TODAY),studentId:o.id,studentName:o.name,amount:pay,voucherUsed:0,cash:pay,hours,regularType:type,type:'新签'});save('income',inc);}
+    document.getElementById('mStu').classList.remove('on');refreshAll();alert('已录入生源，课时已计入剩余课时');
+  }
+}
+
+function init(){ensureSettings();seed();bind();refreshAll();}
+if(document.readyState==='loading'){window.addEventListener('DOMContentLoaded',init);}else{init();}
+</script>
+<script>
+/* PWA：注册离线缓存，支持"添加到主屏幕"当 App 使用（file:// 下自动跳过） */
+if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

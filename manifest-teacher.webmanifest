@@ -1,0 +1,15 @@
+{
+  "name": "教培工作台 · 教师端",
+  "short_name": "教师端",
+  "description": "教培机构教师工作台：课表日历、上课打卡、学员跟进、家校反馈",
+  "start_url": "./teacher.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef1fb",
+  "theme_color": "#4f5dff",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

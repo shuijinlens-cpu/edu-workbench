@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f5dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest-xueguan.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>学管端 · 教培工作台</title>
+<style>
+  :root{
+    --bg:#eef1fb; --card:#ffffff; --ink:#141a2e; --sub:#5b6577; --line:#e3e8f4;
+    --pri:#4f5dff; --pri2:#e9ecff; --ok:#0fb37a; --ok2:#dff7ee; --warn:#ff8a1f; --warn2:#fff0db; --red:#ff4d61; --red2:#ffe1e6; --teal:#06b6d4;
+    --grad:linear-gradient(135deg,#5b6bff 0%,#8a5cff 100%);
+    --shadow:0 8px 24px rgba(40,52,120,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:14px 14px 96px}
+  .topbar{display:flex;align-items:center;margin:-14px -14px 12px;position:sticky;top:0;z-index:30;background:var(--grad);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;box-shadow:0 6px 18px rgba(79,93,255,.25)}
+  .topbar h1{font-size:19px;margin:0;font-weight:800;color:#fff;letter-spacing:.5px}
+  .banner{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+  .banner .b{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 13px;min-width:108px;box-shadow:var(--shadow)}
+  .banner .b .v{font-size:18px;font-weight:800}
+  .banner .b .k{font-size:11px;color:var(--sub)}
+  .banner .b.red{border-color:var(--red);background:var(--red2)}.banner .b.red .v{color:var(--red)}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+  .sec{font-size:12px;font-weight:700;color:var(--sub);margin:4px 2px 10px;letter-spacing:1px}
+  .sec2{font-size:13px;font-weight:700;color:var(--pri);margin:14px 2px 8px}
+  select,input,textarea{font-family:inherit;font-size:16px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink);width:100%}
+  textarea{resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{appearance:none;border:none;border-radius:13px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer;background:var(--pri);color:#fff;min-height:46px;box-shadow:0 4px 12px rgba(79,110,247,.22)}
+  .btn.ghost{background:var(--pri2);color:var(--pri);box-shadow:none}
+  .btn.sm{padding:7px 12px;font-size:13px;min-height:36px;border-radius:10px}
+  .btn.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--pri2);color:var(--pri)}
+  .pill.red{background:var(--red2);color:var(--red)}
+  .pill.ok{background:var(--ok2);color:var(--ok)}
+  .pill.warn{background:var(--warn2);color:var(--warn)}
+  .muted{color:var(--sub);font-size:13px}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:#fff}
+  .item .main{flex:1;min-width:0}
+  .item .t{font-weight:600}
+  .item .s{font-size:12px;color:var(--sub);margin-top:2px}
+  .item .tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--pri2);color:var(--pri)}
+  .item .tag.red{background:var(--red2);color:var(--red)}
+  .item .tag.ok{background:var(--ok2);color:var(--ok)}
+  .item .tag.warn{background:var(--warn2);color:var(--warn)}
+  .keymat{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:13px;padding:8px 12px;border-radius:10px;background:#e9edfb;border:1px solid var(--line);cursor:pointer}
+  .chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .catbox{margin-top:6px}
+  .catbox .ct{font-size:12px;color:var(--sub);margin:8px 0 4px;display:flex;align-items:center;gap:8px}
+  .catbox .ct input{flex:1;font-size:13px;padding:6px 8px}
+  .fbout{white-space:pre-wrap;background:#f4f6fd;border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.7;min-height:120px;color:var(--sub)}
+  .modal{position:fixed;inset:0;background:rgba(20,26,46,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal.on{display:flex}
+  .sheet{background:#fff;width:100%;max-width:760px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+  .sheet h3{margin:0 0 12px;font-size:17px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;overflow-x:auto;padding-bottom:env(safe-area-inset-bottom)}
+  .nav .tab{flex:1 0 auto;text-align:center;padding:8px 4px;font-size:12px;color:var(--sub);cursor:pointer;min-width:52px}
+  .nav .tab .ic{width:24px;height:24px;margin:0 auto 2px;display:block}
+  .nav .tab.on{color:var(--pri);font-weight:800}
+  .nav .tab.on::after{content:"";display:block;width:24px;height:3px;border-radius:3px;background:var(--pri);margin:3px auto 0}
+  .hide{display:none}
+  .empty{text-align:center;color:var(--sub);padding:20px;font-size:14px}
+  .closeX{float:right;font-size:22px;color:var(--sub);cursor:pointer;line-height:1}
+  .inline-form{background:#f4f6fd;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
+  .ck{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 10px;font-size:14px;cursor:pointer;flex-wrap:wrap}
+  .ck input{width:auto}
+  .ck select{flex:0 0 auto;width:auto;min-width:130px;font-size:14px;padding:6px 8px}
+  .ck .mini{flex-basis:100%}
+  .wbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .wbox .wf{background:#fff;border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+  .wbox .wf .wl{font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><h1>学管工作台</h1></div>
+  <div class="banner" id="banner"></div>
+
+  <!-- 今日 -->
+  <section id="tab-today">
+    <div class="card">
+      <div class="sec">今日课表（全部师生 · 可打卡）</div>
+      <div class="list" id="todayList"></div>
+    </div>
+    <div class="card">
+      <div class="sec2">我的待办</div>
+      <div class="inline-form">
+        <div class="row" style="align-items:center">
+          <input id="todoIn" placeholder="添加待办事项" style="flex:1">
+          <button class="btn sm" id="todoAdd">添加</button>
+        </div>
+        <div class="list" id="todoList" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec2">下发教学待办（给老师，标注发布人）</div>
+      <div class="inline-form">
+        <div class="grid2">
+          <div class="field"><label>老师</label><select id="ptTe"></select></div>
+          <div class="field"><label>截止日期</label><input type="date" id="ptDue"></div>
+        </div>
+        <div class="row" style="align-items:center">
+          <input id="ptTitle" placeholder="待办内容，如 回访小明家长" style="flex:1">
+          <button class="btn sm" id="ptAdd">下发</button>
+        </div>
+        <div class="list" id="ptList" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 排课 -->
+  <section id="tab-sched" class="hide">
+    <div class="card">
+      <div class="sec">排课管理（班课可多选学生合并一条）</div>
+      <button class="btn ghost sm" id="addCourse" style="margin-bottom:8px">+ 排一节课</button>
+      <div class="list" id="courseList"></div>
+    </div>
+  </section>
+
+  <!-- 学员（显示课时/福利，隐藏来源） -->
+  <section id="tab-stu" class="hide">
+    <div class="card">
+      <div class="sec">学员管理</div>
+      <button class="btn ghost sm" id="addStu" style="margin-bottom:8px">+ 登记学员</button>
+      <div class="list" id="stuList"></div>
+    </div>
+  </section>
+
+  <!-- 跟进 -->
+  <section id="tab-follow" class="hide">
+    <div class="card">
+      <div class="sec">学员跟进</div>
+      <div class="list" id="followList"></div>
+    </div>
+  </section>
+
+  <!-- 预警 -->
+  <section id="tab-warn" class="hide">
+    <div class="card">
+      <div class="sec">续费预警（剩余正课 ≤ 4）</div>
+      <div class="list" id="warnList"></div>
+    </div>
+  </section>
+
+  <!-- 反馈 -->
+  <section id="tab-fb" class="hide">
+    <div class="card">
+      <div class="sec">家校反馈生成器 · 语料库（可增补，三端同步）</div>
+      <div class="field"><label>选择学员</label><select id="fbStu"></select></div>
+      <div class="grid2">
+        <div class="field"><label>上课日期</label><input type="date" id="fbDate"></div>
+        <div class="field"><label>时间段</label><input id="fbTime" placeholder="如 15:30-16:30"></div>
+      </div>
+      <div id="fbMats"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost sm" id="fbClear">清空选择</button>
+        <button class="btn ghost sm" id="fbSave" style="margin-left:6px">保存为跟进</button>
+        <button class="btn" id="fbCopy" style="margin-left:auto">一键复制</button>
+      </div>
+      <div class="fbout" id="fbOut" style="margin-top:10px">选择学员并点选关键词，自动生成反馈文案…</div>
+    </div>
+  </section>
+</div>
+
+<!-- 弹窗：学员（学管登记，仅录信息；课时由校长录入） -->
+<div class="modal" id="mStu"><div class="sheet"><span class="closeX" data-close>×</span><h3>登记学员</h3>
+  <div class="grid2">
+    <div class="field"><label>姓名</label><input id="sName"></div>
+    <div class="field"><label>年级</label><select id="sGrade"></select></div>
+  </div>
+  <div class="grid2">
+    <div class="field"><label>家长电话</label><input id="sPhone"></div>
+    <div class="field"><label>状态</label><select id="sStatus"><option>线索</option><option>在读</option><option>流失</option></select></div>
+  </div>
+  <div class="field"><label>备注</label><input id="sNote"></div>
+  <div class="mini" style="margin:2px 0 10px">仅登记学员信息，课时 / 班型由校长在录入生源时统一录入</div>
+  <div class="row"><button class="btn" id="sSave">保存</button><button class="btn danger" id="sDel" style="margin-left:auto">删除</button></div>
+</div></div>
+
+<!-- 弹窗：排课 -->
+<div class="modal" id="mCourse"><div class="sheet"><span class="closeX" data-close>×</span><h3>排课</h3>
+  <div class="grid2">
+    <div class="field"><label>老师（必选）</label><select id="cTe"></select></div>
+    <div class="field"><label>班型</label><select id="cType"><option value="班课">班课</option><option value="1v1">一对一</option></select></div>
+    <div class="field"><label>日期</label><input type="date" id="cDate"></div>
+    <div class="field"><label>时间</label><input type="time" id="cTime"></div>
+    <div class="field"><label>课时数</label><input type="number" id="cHrs" value="1"></div>
+  </div>
+  <div class="field"><label>选择学员（先勾选学生，再为每人选消耗方式；班型决定可排额度）</label></div>
+  <div class="list" id="cStuBox" style="gap:6px"></div>
+  <div class="field"><label>备注</label><input id="cNote"></div>
+  <div class="row"><button class="btn" id="cSave">保存</button><button class="btn danger" id="cDel" style="margin-left:auto;display:none">删除</button></div>
+</div></div>
+
+<div class="nav" id="nav">
+  <div class="tab on" data-t="today"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>今日</div>
+  <div class="tab" data-t="sched"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>排课</div>
+  <div class="tab" data-t="stu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>学员</div>
+  <div class="tab" data-t="follow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 0 0 1 2-2h14a2 0 0 1 2 2z"/></svg>跟进</div>
+  <div class="tab" data-t="warn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>预警</div>
+  <div class="tab" data-t="fb"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 0 0 1 2-2h14a2 0 0 1 2 2z"/></svg>反馈</div>
+</div>
+
+<script>
+const PREFIX='wb_tx_';
+const SCHEMA=5;
+function load(k,def){try{const v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(k,v){localStorage.setItem(PREFIX+k,JSON.stringify(v));}
+const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function dstr(d){return d.toISOString().slice(0,10);}
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+function addDays(n){const d=new Date(TODAY);d.setDate(d.getDate()+n);return d;}
+function fmtMoney(n){return '¥'+Number(n||0).toLocaleString('zh-CN');}
+function fmtH(n){return Number.isInteger(n)?String(n):(Math.round(n*10)/10).toFixed(1);}
+const GRADES=['幼班','小一','小二','小三','小四','小五','小六','初一','初二','初三','高一','高二','高三'];
+function schoolYearOf(d){const y=d.getFullYear();const m=d.getMonth()+1;return (m>=9)?y:y-1;}
+function dispGrade(s){if(!s)return '';let idx=GRADES.indexOf(s.grade);if(idx<0)return s.grade||'';const ey=s.enrollYear||schoolYearOf(TODAY);const sy=schoolYearOf(TODAY);let ni=Math.max(0,Math.min(GRADES.length-1,idx+(sy-ey)));return GRADES[ni];}
+function teacherLabel(t){return t.name+'（'+t.subject+'）';}
+function emptyWelfare(){return {elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:0,materials:{count:0,desc:''},voucher:0};}
+function welfareText(w){
+  if(!w)return '无';
+  const p=[];
+  if(w.voucher)p.push('券'+w.voucher);
+  if(w.paper)p.push('试卷'+w.paper);
+  if(w.materials&&w.materials.count)p.push('资料'+w.materials.count);
+  if(w.elective&&w.elective.count)p.push('任选'+w.elective.count+'('+(w.elective.type==='1v1'?'一对一':'班课')+')');
+  if(w.mock&&w.mock.count)p.push('押题'+w.mock.count+'('+(w.mock.type==='1v1'?'一对一':'班课')+')');
+  return p.length?p.join(' · '):'无';
+}
+function studentSubject(s){const c=load('courses',[]).find(x=>(x.students||[]).some(st=>st.studentId===s.id));return c?c.subject:'';}
+
+function defaultFbLib(){return [
+  {key:'content',name:'上课内容',items:['指数函数的性质和图像','指数不等式的解','Unit1-2词汇巩固','语法巩固与易错点','综合练习与讲评','听力专项训练','阅读理解技巧','写作结构讲解','错题复盘','阶段性测试']},
+  {key:'status',name:'上课状态',items:['状态很好跟节奏','认真听课投入','积极互动发言','有些浮躁需提醒','及时调整认真','注意力需加强']},
+  {key:'require',name:'老师要求',items:['完成课后习题','多复习巩固','每天坚持练习一页','整理错题本','加强词汇积累','课前预习下节课','坚持指读任务']},
+  {key:'problem',name:'学生问题',items:['注意力不够集中','单词听写易错','知识遗忘较快','遇到难题易气馁','基础仍需巩固','做题速度偏慢','发音需多练']},
+  {key:'encourage',name:'老师鼓励',items:['状态在线跟节奏','消化吸收不错','表现有进步','继续保持加油','手感保持得好','思路很清晰','比上次有提升']},
+  {key:'measure',name:'措施方法',items:['边做题边回顾','错题重点复盘','增加上册词汇听写','多下功夫练习','分层布置作业','定期小测巩固','家校配合督促']}
+];}
+function getFbLib(){let lib=load('fblib',null);if(!lib){lib=defaultFbLib();save('fblib',lib);}return lib;}
+function addFbWord(catKey,word){word=(word||'').trim();if(!word)return false;const lib=getFbLib();const c=lib.find(x=>x.key===catKey);if(c&&!c.items.includes(word)){c.items.push(word);save('fblib',lib);}return true;}
+
+function resetData(){
+  ['teachers','students','courses','tasks','income','refund','settings','followups','fblib','xgTodos'].forEach(k=>localStorage.removeItem(PREFIX+k));
+}
+function seed(){
+  if(load('schema',0)===SCHEMA)return;
+  if(!load('teachers',null)){ resetData(); } else { return; }
+  const teachers=[{id:'t1',name:'王老师',subject:'数学',wage1v1:80,wageBanke:40},{id:'t2',name:'李老师',subject:'英语',wage1v1:75,wageBanke:38}];
+  const students=[
+    {id:'s1',name:'小明',grade:'初三',enrollYear:2025,phone:'13800000001',status:'在读',source:'转介绍',note:'',
+      regular:{type:'班课',total:20,left:20},welfare:{elective:{count:1,type:'班课'},mock:{count:1,type:'班课'},paper:2,materials:{count:1,desc:'数学查缺补漏包'},voucher:200}},
+    {id:'s2',name:'小红',grade:'高一',enrollYear:2025,phone:'13800000002',status:'在读',source:'地推',note:'',
+      regular:{type:'1v1',total:8,left:8},welfare:{elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:0,materials:{count:0,desc:''},voucher:0}},
+    {id:'s3',name:'小刚',grade:'初二',enrollYear:2025,phone:'13800000003',status:'在读',source:'线上广告',note:'',
+      regular:{type:'班课',total:3,left:3},welfare:{elective:{count:0,type:'班课'},mock:{count:0,type:'班课'},paper:1,materials:{count:0,desc:''},voucher:0}}
+  ];
+  const courses=[
+    {id:'c1',date:dstr(TODAY),time:'09:00',teacherId:'t1',teacherName:'王老师（数学）',classType:'班课',subject:'数学',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s1',studentName:'小明',consume:'正课'},{studentId:'s3',studentName:'小刚',consume:'正课'}]},
+    {id:'c2',date:dstr(TODAY),time:'15:00',teacherId:'t2',teacherName:'李老师（英语）',classType:'1v1',subject:'英语',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s2',studentName:'小红',consume:'正课'}]},
+    {id:'c3',date:dstr(addDays(-3)),time:'14:00',teacherId:'t1',teacherName:'王老师（数学）',classType:'班课',subject:'数学',duration:1,status:'已上',note:'',type:'正课',students:[{studentId:'s1',studentName:'小明',consume:'正课'},{studentId:'s3',studentName:'小刚',consume:'正课'}]},
+    {id:'c5',date:dstr(addDays(2)),time:'11:00',teacherId:'t2',teacherName:'李老师（英语）',classType:'1v1',subject:'英语',duration:1,status:'未上',note:'',type:'正课',students:[{studentId:'s2',studentName:'小红',consume:'正课'}]}
+  ];
+  const followups=[
+    {id:'f1',studentId:'s1',studentName:'小明',teacherId:'t1',teacherName:'王老师（数学）',courseId:'c3',date:dstr(addDays(-3)),subject:'数学',content:'指数函数的性质和图像；指数不等式的解',status:'状态很好跟节奏',require:'完成课后习题；多复习巩固',problem:'知识遗忘较快',encourage:'消化吸收不错',measure:'边做题边回顾',text:''}
+  ];
+  save('teachers',teachers);save('students',students);save('courses',courses);save('followups',followups);
+  save('income',[]);save('refund',[]);save('tasks',[]);save('xgTodos',[]);save('settings',{priceMatrix:{'小学':{'1v1':120,'班课':60},'初中':{'1v1':150,'班课':75},'高中':{'1v1':180,'班课':90}},teacherWageDefault:{'1v1':80,'班课':40},fixedItems:[]});save('fblib',defaultFbLib());
+}
+function ensureSettings(){if(!load('settings',null))save('settings',{priceMatrix:{'小学':{'1v1':120,'班课':60},'初中':{'1v1':150,'班课':75},'高中':{'1v1':180,'班课':90}},teacherWageDefault:{'1v1':80,'班课':40},fixedItems:[]});getFbLib();}
+
+const state={tab:'today',fbStu:'',fbDate:'',fbTime:'',fbSel:{},editStu:null,editCourse:null};
+
+function getStudents(){return load('students',[]);}
+function getCourses(){return load('courses',[]);}
+function getTeachers(){return load('teachers',[]);}
+function getFollowups(){return load('followups',[]);}
+function getTodos(){return load('xgTodos',[]);}
+function getTasks(){return load('tasks',[]);}
+function courseNames(c){return (c.students||[]).map(st=>st.studentName).join('、');}
+function deductForCourse(c){
+  const stus=getStudents();let changed=false;
+  (c.students||[]).forEach(st=>{const i=stus.findIndex(x=>x.id===st.studentId);if(i<0)return;const consume=st.consume||'正课';
+    if(consume==='正课'){stus[i].regular.left=(stus[i].regular.left||0)-c.duration;}
+    else if(consume==='elective'){stus[i].welfare=stus[i].welfare||emptyWelfare();stus[i].welfare.elective.count=Math.max(0,(stus[i].welfare.elective.count||0)-c.duration);}
+    else if(consume==='mock'){stus[i].welfare=stus[i].welfare||emptyWelfare();stus[i].welfare.mock.count=Math.max(0,(stus[i].welfare.mock.count||0)-c.duration);}
+    changed=true;});
+  if(changed)save('students',stus);
+}
+function setCourseDone(id){const cs=getCourses();const i=cs.findIndex(x=>x.id===id);if(i<0)return;if(cs[i].status!=='已上'){cs[i].status='已上';deductForCourse(cs[i]);save('courses',cs);}refreshAll();}
+
+function renderBanner(){
+  const b=document.getElementById('banner');
+  const warn=getStudents().filter(s=>s.regular.left<=4&&s.status==='在读');
+  const todo=getTodos().filter(t=>!t.done);
+  b.innerHTML=[
+    {v:warn.length,k:'续费预警(课时≤4)',red:warn.length>0,go:'warn'},
+    {v:todo.length,k:'我的待办',red:false,go:'today'}
+  ].map(x=>`<div class="b ${x.red?'red':''}" data-go="${x.go}"><div class="v">${x.v}</div><div class="k">${x.k}</div></div>`).join('');
+  b.querySelectorAll('.b').forEach(el=>el.onclick=()=>switchTab(el.dataset.go));
+}
+
+function renderToday(){
+  const list=document.getElementById('todayList');
+  const cs=getCourses().filter(c=>c.date===dstr(TODAY)).sort((a,b)=>a.time.localeCompare(b.time));
+  if(!cs.length)list.innerHTML='<div class="empty">今天没有排课 🎉</div>';
+  else list.innerHTML=cs.map(c=>`<div class="item"><div class="main"><div class="t">${c.time} · ${courseNames(c)}（${c.subject}）</div><div class="s">${c.teacherName} · ${c.classType==='1v1'?'一对一':'班课'} · ${c.duration}课时</div></div>${c.status==='已上'?'<span class="tag ok">已上</span>':'<button class="btn sm" data-clock="'+c.id+'">打卡</button>'}</div>`).join('');
+  list.querySelectorAll('[data-clock]').forEach(b=>b.onclick=()=>setCourseDone(b.dataset.clock));
+  const tl=document.getElementById('todoList');
+  const todos=getTodos();
+  if(!todos.length)tl.innerHTML='<div class="empty">暂无待办</div>';
+  else tl.innerHTML=todos.map(t=>`<div class="item"><div class="main"><div class="t" style="${t.done?'text-decoration:line-through;color:var(--sub)':''}">${t.text}</div></div><button class="btn sm ${t.done?'ghost':'line'}" data-td="${t.id}">${t.done?'已完':'完成'}</button></div>`).join('');
+  tl.querySelectorAll('[data-td]').forEach(b=>b.onclick=()=>{const ts=getTodos();const i=ts.findIndex(x=>x.id===b.dataset.td);if(i>=0){ts[i].done=!ts[i].done;save('xgTodos',ts);refreshAll();}});
+  const ptl=document.getElementById('ptList');
+  const tasks=getTasks();
+  if(!tasks.length)ptl.innerHTML='<div class="empty">暂无下发记录</div>';
+  else ptl.innerHTML=tasks.slice().reverse().map(t=>{const over=t.due<dstr(TODAY);return `<div class="item"><div class="main"><div class="t">${t.title}</div><div class="s">@ ${(t.teacherNames||[]).join('、')||'全体'} · 截止 ${t.due} · 发布人 ${t.publisher||'学管'}</div></div><span class="tag ${over?'red':''}">${over?'逾期':(t.done?'已办':'待办')}</span></div>`;}).join('');
+}
+
+function renderSched(){
+  const list=document.getElementById('courseList');
+  const cs=getCourses().slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!cs.length)list.innerHTML='<div class="empty">暂无排课</div>';
+  else list.innerHTML=cs.map(c=>`<div class="item" data-c="${c.id}"><div class="main"><div class="t">${c.date} ${c.time} · ${courseNames(c)}（${c.subject}）</div><div class="s">${c.teacherName} · ${c.classType==='1v1'?'一对一':'班课'} · ${c.duration}课时 · ${c.type==='福利课'?'福利课':'正课'} · ${c.status}</div></div><span class="tag">编辑</span></div>`).join('');
+  list.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>openCourse(el.dataset.c));
+}
+
+function renderStu(){
+  const list=document.getElementById('stuList');
+  const stus=getStudents();
+  if(!stus.length)list.innerHTML='<div class="empty">暂无学员</div>';
+  else list.innerHTML=stus.map(s=>`<div class="item" data-stu="${s.id}"><div class="main"><div class="t">${s.name} <span class="muted">${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}</span></div><div class="s">剩余正课 ${fmtH(s.regular.left)} · 福利 ${welfareText(s.welfare)} · ${s.status}</div></div><span class="tag">${s.status}</span></div>`).join('');
+  list.querySelectorAll('[data-stu]').forEach(el=>el.onclick=()=>openStu(el.dataset.stu));
+}
+
+function followSummary(f){
+  const parts=[];
+  if(f.content)parts.push('📚 内容：'+f.content);
+  if(f.require)parts.push('📌 要求：'+f.require);
+  if(f.problem)parts.push('⚠️ 问题：'+f.problem);
+  if(f.measure)parts.push('🛠 措施：'+f.measure);
+  const body=parts.length?parts.join('\n'):(f.text||'');
+  return '家长好！今日【'+(f.subject||'')+'】反馈 ✅\n'+body;
+}
+function renderFollow(){
+  const list=document.getElementById('followList');
+  const fs=getFollowups().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!fs.length)list.innerHTML='<div class="empty">暂无跟进记录</div>';
+  else list.innerHTML=fs.map(f=>`<div class="item" style="flex-direction:column;align-items:flex-start"><div class="main" style="width:100%"><div class="t">${f.studentName} · ${f.teacherName||'学管'} · ${f.date}</div><div class="s" style="margin-top:6px;white-space:pre-wrap;line-height:1.6">${followSummary(f)}</div></div></div>`).join('');
+}
+
+function renderWarn(){
+  const list=document.getElementById('warnList');
+  const ws=getStudents().filter(s=>s.regular.left<=4&&s.status==='在读');
+  if(!ws.length)list.innerHTML='<div class="empty">暂无预警，学员课时充足 👍</div>';
+  else list.innerHTML=ws.map(s=>`<div class="item"><div class="main"><div class="t">${s.name} <span class="muted">${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}</span></div><div class="s">剩余正课 ${fmtH(s.regular.left)}，请及时联系续费</div></div><span class="tag red">预警</span></div>`).join('');
+}
+
+function renderFb(){
+  const sel=document.getElementById('fbStu');
+  const stus=getStudents();
+  sel.innerHTML='<option value="">-- 请选择学员 --</option>'+stus.map(s=>`<option value="${s.id}">${s.name}（${dispGrade(s)}）</option>`).join('');
+  sel.value=state.fbStu;
+  sel.onchange=()=>{state.fbStu=sel.value;state.fbSel={};refreshAll();};
+  const lib=getFbLib();
+  const box=document.getElementById('fbMats');
+  box.innerHTML=lib.map(c=>`<div class="catbox"><div class="ct">${c.name}<input placeholder="增补关键词后点 +" data-addcat="${c.key}"><button class="btn ghost sm" data-addbtn="${c.key}">+</button></div><div class="keymat">${c.items.map((it)=>{const k=c.key+'|'+it;const on=state.fbSel[k];return `<span class="chip ${on?'on':''}" data-k="${k}">${it}</span>`;}).join('')}</div></div>`).join('');
+  box.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const k=ch.dataset.k;state.fbSel[k]=!state.fbSel[k];refreshAll();});
+  box.querySelectorAll('[data-addbtn]').forEach(b=>b.onclick=()=>{const cat=b.dataset.addbtn;const inp=box.querySelector('[data-addcat="'+cat+'"]');if(addFbWord(cat,inp.value)){inp.value='';refreshAll();}});
+}
+function fbGroups(){const g={content:[],status:[],require:[],problem:[],encourage:[],measure:[]};Object.keys(state.fbSel).forEach(k=>{if(state.fbSel[k]){const idx=k.indexOf('|');g[k.slice(0,idx)].push(k.slice(idx+1));}});return g;}
+function genFeedback(s,g){
+  const name=s.name;const subj=studentSubject(s)||'本课';const L=[];
+  L.push('家长您好！今天【'+subj+'】的课堂情况跟您同步一下～');
+  if(g.content.length)L.push('今天'+name+'主要学习了：'+g.content.join('、')+'。');
+  const hasProb=g.problem.length>0,hasEnc=g.encourage.length>0,hasStatus=g.status.length>0;
+  let mood = hasProb&&!hasEnc?'attn':(hasProb&&hasEnc?'mix':'good');
+  let para='';
+  if(hasStatus)para+='课堂上'+g.status.join('，')+'；';
+  if(mood==='good'){para+=(hasEnc?g.encourage.join('，')+'，整体状态很棒。':'整体表现稳定在线。');}
+  else if(mood==='mix'){para+='有亮点也有要打磨的地方——'+g.encourage.join('，')+'，不过'+g.problem.join('，')+'，这一块我们多花点心思。';}
+  else{para+='有个小地方需要留意：'+g.problem.join('，')+'，相信慢慢能调整过来。';}
+  if(para)L.push(para);
+  if(g.require.length)L.push('课后麻烦提醒孩子：'+g.require.join('；')+'。');
+  if(g.measure.length)L.push('接下来我会'+g.measure.join('；')+'，家校一起帮孩子巩固。');
+  const closings={good:['为'+name+'的进步点赞，继续加油！🌟','今天状态在线，期待下节课更精彩～💪'],mix:['一步一个脚印，'+name+'会越来越稳的，我们一起加油！🌱'],attn:['调整后相信会有改善，辛苦家长一起配合，谢谢！🤝']};
+  L.push(closings[mood][0]);
+  return L.join('\n');
+}
+function renderFbOut(){
+  const out=document.getElementById('fbOut');
+  if(!state.fbStu){out.style.color='var(--sub)';out.textContent='选择学员并点选关键词，自动生成反馈文案…';return;}
+  const s=getStudents().find(x=>x.id===state.fbStu);
+  out.style.color='var(--ink)';
+  out.textContent=genFeedback(s,fbGroups());
+}
+
+/* 弹窗 */
+function openStu(id){
+  const s=id?getStudents().find(x=>x.id===id):null;state.editStu=id;
+  document.getElementById('sName').value=s?s.name:'';
+  const gsel=document.getElementById('sGrade');gsel.innerHTML=GRADES.map(g=>`<option ${s&&g===s.grade?'selected':''}>${g}</option>`).join('');
+  document.getElementById('sPhone').value=s?s.phone:'';
+  document.getElementById('sStatus').value=s?s.status:'线索';
+  document.getElementById('sNote').value=s?s.note||'':'';
+  document.getElementById('mStu').classList.add('on');
+}
+function openCourse(id){
+  state.editCourse=id||null;
+  const c=id?getCourses().find(x=>x.id===id):{};
+  // 关键修复：打开弹窗时直接填充老师下拉
+  const cTe=document.getElementById('cTe');
+  cTe.innerHTML=getTeachers().map(t=>`<option value="${t.id}">${teacherLabel(t)}</option>`).join('');
+  document.getElementById('cDate').value=c.date||dstr(TODAY);
+  document.getElementById('cTime').value=c.time||'09:00';
+  document.getElementById('cType').value=c.classType||'班课';
+  if(c.teacherId&&[...cTe.options].some(o=>o.value===c.teacherId))cTe.value=c.teacherId;
+  document.getElementById('cHrs').value=c.duration||1;
+  document.getElementById('cNote').value=c.note||'';
+  renderCourseStuBox();
+  const box=document.getElementById('cStuBox');
+  if(c.students){box.querySelectorAll('input[data-sid]').forEach(cb=>{const st=c.students.find(x=>x.studentId===cb.dataset.sid);if(st){cb.checked=true;const sel=box.querySelector('select[data-csid="'+cb.dataset.sid+'"]');if(sel&&(st.consume==='正课'||st.consume==='elective'||st.consume==='mock'))sel.value=st.consume;}});}
+  document.getElementById('cDel').style.display=id?'block':'none';
+  document.getElementById('mCourse').classList.add('on');
+}
+function renderCourseStuBox(){
+  const box=document.getElementById('cStuBox');
+  const type=document.getElementById('cType').value;
+  const stus=getStudents();
+  box.innerHTML=stus.map(s=>{
+    const w=s.welfare||emptyWelfare();
+    const opts=[];
+    if((s.regular.type===type)&&(s.regular.left||0)>0)opts.push('<option value="正课">正课('+fmtH(s.regular.left)+'次)</option>');
+    if((w.elective.type===type)&&(w.elective.count||0)>0)opts.push('<option value="elective">任选课('+w.elective.count+'次)</option>');
+    if((w.mock.type===type)&&(w.mock.count||0)>0)opts.push('<option value="mock">押题课('+w.mock.count+'次)</option>');
+    if(!opts.length)opts.push('<option value="正课">无可用额度</option>');
+    const mat=[];if(w.paper)mat.push('试卷分析'+w.paper+'次');if(w.materials&&w.materials.count)mat.push('定制资料'+w.materials.count+'科'+(w.materials.desc?('·'+w.materials.desc):''));
+    return `<label class="ck"><input type="checkbox" data-sid="${s.id}" data-sname="${s.name}"> ${s.name}（${dispGrade(s)}·${s.regular.type==='1v1'?'一对一':'班课'}·余${fmtH(s.regular.left)}）`
+      +`<select data-csid="${s.id}">${opts.join('')}</select>`
+      +(mat.length?`<span class="mini">已发资料：${mat.join('、')}</span>`:'')
+      +`</label>`;
+  }).join('');
+}
+
+function refreshAll(){
+  renderBanner();
+  if(state.tab==='today'){fillSelects();renderToday();}
+  else if(state.tab==='sched'){fillSelects();renderSched();}
+  else if(state.tab==='stu'){renderStu();}
+  else if(state.tab==='follow'){renderFollow();}
+  else if(state.tab==='warn'){renderWarn();}
+  else if(state.tab==='fb'){fillSelects();renderFb();renderFbOut();}
+}
+function fillSelects(){
+  const cTe=document.getElementById('cTe');if(cTe)cTe.innerHTML=getTeachers().map(t=>`<option value="${t.id}">${teacherLabel(t)}</option>`).join('');
+  const ptTe=document.getElementById('ptTe');if(ptTe)ptTe.innerHTML=getTeachers().map(t=>`<option value="${t.id}">${teacherLabel(t)}</option>`).join('');
+  const cTime=document.getElementById('cTime');if(cTime&&!cTime.value)cTime.value='09:00';
+  const ptDue=document.getElementById('ptDue');if(ptDue&&!ptDue.value)ptDue.value=dstr(TODAY);
+  const fbDate=document.getElementById('fbDate');if(fbDate&&!fbDate.value)fbDate.value=dstr(TODAY);
+}
+function switchTab(t){
+  state.tab=t;
+  document.querySelectorAll('#nav .tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
+  ['today','sched','stu','follow','warn','fb'].forEach(n=>document.getElementById('tab-'+n).classList.toggle('hide',n!==t));
+  refreshAll();
+}
+
+function bind(){
+  document.querySelectorAll('#nav .tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.t));
+  document.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>x.closest('.modal').classList.remove('on'));
+  document.getElementById('todoAdd').onclick=()=>{const v=document.getElementById('todoIn').value.trim();if(!v){alert('请输入待办');return;}const ts=getTodos();ts.push({id:uid(),text:v,done:false});save('xgTodos',ts);document.getElementById('todoIn').value='';refreshAll();};
+  document.getElementById('ptAdd').onclick=()=>{
+    const tid=document.getElementById('ptTe').value;const title=document.getElementById('ptTitle').value.trim();const due=document.getElementById('ptDue').value;
+    if(!tid||!title){alert('请选择老师并填写待办内容');return;}
+    const t=getTeachers().find(x=>x.id===tid);
+    const tasks=getTasks();tasks.push({id:uid(),title,due,toAll:false,teacherIds:[tid],teacherNames:[teacherLabel(t)],done:false,createdAt:dstr(TODAY),publisher:'学管'});
+    save('tasks',tasks);document.getElementById('ptTitle').value='';refreshAll();alert('已下发给 '+teacherLabel(t));
+  };
+  document.getElementById('addStu').onclick=()=>openStu(null);
+  document.getElementById('sSave').onclick=()=>{
+    const stus=getStudents();const name=document.getElementById('sName').value.trim();
+    if(!name){alert('请填写姓名');return;}
+    const o={id:state.editStu||uid(),name,grade:document.getElementById('sGrade').value,phone:document.getElementById('sPhone').value,regular:{type:'班课',total:0,left:0},welfare:emptyWelfare(),status:document.getElementById('sStatus').value,note:document.getElementById('sNote').value,enrollYear:schoolYearOf(TODAY),source:''};
+    if(state.editStu){const i=stus.findIndex(s=>s.id===state.editStu);stus[i]=o;}else stus.push(o);save('students',stus);document.getElementById('mStu').classList.remove('on');refreshAll();
+  };
+  document.getElementById('sDel').onclick=()=>{if(!state.editStu)return;if(!confirm('确认删除该学员？'))return;save('students',getStudents().filter(s=>s.id!==state.editStu));document.getElementById('mStu').classList.remove('on');refreshAll();};
+  document.getElementById('cType').onchange=()=>renderCourseStuBox();
+  document.getElementById('addCourse').onclick=()=>openCourse(null);
+  document.getElementById('cSave').onclick=()=>{
+    const tid=document.getElementById('cTe').value;
+    if(!tid){alert('请选择老师');return;}
+    const type=document.getElementById('cType').value;
+    const box=document.getElementById('cStuBox');
+    const checks=[...box.querySelectorAll('input[data-sid]:checked')];
+    if(!checks.length){alert('请至少勾选一名学员');return;}
+    if(type==='1v1'&&checks.length>1){alert('一对一只能选 1 名学生');return;}
+    const students=checks.map(cb=>{const sel=box.querySelector('select[data-csid="'+cb.dataset.sid+'"]');return {studentId:cb.dataset.sid,studentName:cb.dataset.sname,consume:sel?sel.value:'正课'};});
+    const anyWelfare=students.some(st=>st.consume!=='正课');
+    const t=getTeachers().find(x=>x.id===tid);
+    const cs=getCourses();
+    const rec={date:document.getElementById('cDate').value,time:document.getElementById('cTime').value,teacherId:tid,teacherName:teacherLabel(t),classType:type,subject:t.subject,duration:+document.getElementById('cHrs').value||1,status:'未上',note:document.getElementById('cNote').value,type:anyWelfare?'福利课':'正课',students};
+    if(state.editCourse){const i=cs.findIndex(c=>c.id===state.editCourse);cs[i]={...cs[i],...rec};}else cs.push({id:uid(),...rec});
+    save('courses',cs);document.getElementById('mCourse').classList.remove('on');refreshAll();alert('排课已保存（班课已合并为一条）');
+  };
+  document.getElementById('cDel').onclick=()=>{if(!state.editCourse)return;if(!confirm('确认删除该排课？'))return;save('courses',getCourses().filter(c=>c.id!==state.editCourse));document.getElementById('mCourse').classList.remove('on');refreshAll();};
+  document.getElementById('fbDate').onchange=()=>{state.fbDate=document.getElementById('fbDate').value;refreshAll();};
+  document.getElementById('fbTime').oninput=()=>{state.fbTime=document.getElementById('fbTime').value;refreshAll();};
+  document.getElementById('fbClear').onclick=()=>{state.fbSel={};refreshAll();};
+  document.getElementById('fbCopy').onclick=()=>{if(!state.fbStu){alert('请先选择学员');return;}const txt=document.getElementById('fbOut').textContent;navigator.clipboard?navigator.clipboard.writeText(txt).then(()=>alert('已复制反馈文案')):alert(txt);};
+  document.getElementById('fbSave').onclick=()=>{
+    if(!state.fbStu){alert('请先选择学员');return;}
+    const s=getStudents().find(x=>x.id===state.fbStu);const g=fbGroups();
+    const fs=getFollowups();
+    fs.push({id:uid(),studentId:s.id,studentName:s.name,teacherId:'',teacherName:'学管',courseId:'',date:state.fbDate||dstr(TODAY),subject:studentSubject(s),content:g.content.join('；'),status:g.status.join('；'),require:g.require.join('、'),problem:g.problem.join('、'),encourage:g.encourage.join('、'),measure:g.measure.join('、'),text:document.getElementById('fbOut').textContent});
+    save('followups',fs);alert('已保存为跟进记录');
+  };
+}
+window.addEventListener('storage',e=>{if(e.key&&e.key.indexOf('wb_tx_')===0){refreshAll();}});
+
+function init(){ensureSettings();seed();bind();refreshAll();}
+if(document.readyState==='loading'){window.addEventListener('DOMContentLoaded',init);}else{init();}
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

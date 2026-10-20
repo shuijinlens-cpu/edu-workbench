@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f5dff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest-principal.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>教培三端工作台</title>
+<style>
+  :root{
+    --bg:#eef1fb; --card:#ffffff; --ink:#141a2e; --sub:#5b6577; --line:#e3e8f4;
+    --pri:#4f5dff; --pri2:#e9ecff; --ok:#0fb37a; --ok2:#dff7ee; --warn:#ff8a1f; --warn2:#fff0db; --red:#ff4d61; --red2:#ffe1e6;
+    --grad:linear-gradient(135deg,#5b6bff 0%,#8a5cff 100%);
+    --shadow:0 8px 24px rgba(40,52,120,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+  .wrap{max-width:620px;margin:0 auto;padding:0 14px 28px}
+  .topbar{margin:0 -14px 16px;background:var(--grad);color:#fff;padding:calc(env(safe-area-inset-top) + 26px) 20px 26px;box-shadow:0 6px 18px rgba(79,93,255,.25)}
+  .topbar h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:.5px}
+  .topbar p{margin:0;font-size:13px;opacity:.9}
+  .app{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px;text-decoration:none;color:inherit}
+  .app:active{transform:scale(.99)}
+  .app .ico{flex:0 0 52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
+  .app .main{flex:1;min-width:0}
+  .app .t{font-size:16px;font-weight:800}
+  .app .s{font-size:12.5px;color:var(--sub);margin-top:3px;line-height:1.45}
+  .app .go{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--pri)}
+  .i1{background:var(--pri2)}.i2{background:var(--ok2)}.i3{background:var(--warn2)}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+  .sec{font-size:12px;font-weight:800;color:var(--sub);margin:0 0 10px;letter-spacing:1px}
+  ol{margin:0;padding-left:20px;color:var(--sub);font-size:13.5px;line-height:1.9}
+  ol b{color:var(--ink)}
+  .tip{font-size:12.5px;color:var(--sub);background:var(--ok2);border-radius:12px;padding:10px 12px;margin-top:10px;line-height:1.6}
+  code{background:var(--pri2);color:var(--pri);padding:1px 6px;border-radius:6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>教培三端工作台</h1>
+  <p>校长 · 教师 · 学管　数据同源，实时互通</p>
+</div>
+
+<div class="wrap">
+  <a class="app" href="principal.html">
+    <div class="ico i1">📊</div>
+    <div class="main">
+      <div class="t">校长端</div>
+      <div class="s">经营看板 · 录入生源/课时 · 师资工资 · 排课 · 家校反馈</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <a class="app" href="teacher.html">
+    <div class="ico i2">🎓</div>
+    <div class="main">
+      <div class="t">教师端</div>
+      <div class="s">课表日历 · 上课打卡 · 学员跟进 · 家校反馈生成</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <a class="app" href="xueguan.html">
+    <div class="ico i3">📋</div>
+    <div class="main">
+      <div class="t">学管端</div>
+      <div class="s">今日课表 · 排课 · 学员登记 · 跟进 · 续费预警</div>
+    </div>
+    <div class="go">进入 ›</div>
+  </a>
+
+  <div class="card">
+    <div class="sec">装到手机桌面，当 App 用</div>
+    <ol>
+      <li><b>iPhone：</b>Safari 打开本页或任一端口 → 底部「分享」 → 「添加到主屏幕」</li>
+      <li><b>Android：</b>Chrome 打开 → 右上角菜单 → 「安装应用 / 添加到主屏幕」</li>
+      <li>装好后点桌面图标即可全屏使用，<b>断网也能打开</b>（数据存在本机）</li>
+    </ol>
+    <div class="tip">三端共用同一份本地数据 key（<code>wb_tx_</code>），部署在同一网址下即可实时互通；各自独立分发时数据互不相通，请注意。</div>
+  </div>
+</div>
+</body>
+</html>
