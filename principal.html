@@ -75,6 +75,7 @@
   .modal.on{display:flex}
   .sheet{background:#fff;width:100%;max-width:780px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;max-height:88dvh;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
   /* ---- 手机端：弹窗底部按钮吸底 + 视口自适应（软键盘/浏览器工具栏不遮按钮） ---- */
+  .sheet:has(>.row:last-child){padding-bottom:0}
   .sheet>.row:last-child{position:sticky;bottom:0;z-index:3;background:#fff;padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin-top:12px;border-top:1px solid var(--line,#e5e7eb)}
   .btn,.sgb,.tab,.chip,.closeX{touch-action:manipulation}
   .sheet h3{margin:0 0 12px;font-size:17px}
