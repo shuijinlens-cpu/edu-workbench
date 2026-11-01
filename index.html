@@ -97,6 +97,40 @@
     </ol>
     <div class="tip">本部署版数据保存在本机浏览器（localStorage），同一设备三端数据互通；换设备或清缓存前请先在校长端「同步」里导出备份。需要多设备云端实时同步，请使用 WorkBuddy 链接版：入口 <code>https://workbuddy.link/p/us0ctJ1TEtOw2Lhbz8rlIQ</code></div>
   </div>
+
+  <div class="card">
+    <div class="sec">独立下载 · 三个端口分开装</div>
+    <div style="font-size:13.5px;color:var(--sub);line-height:1.7">
+      想把三个端口<b style="color:var(--ink)">分别装到不同手机/电脑</b>？可单独下载任一端口的单文件应用，双击用浏览器打开即用。
+    </div>
+    <a class="app" style="margin:12px 0 0;padding:12px" href="./downloads.html">
+      <div class="ico i1" style="flex:0 0 44px;height:44px"><svg viewBox="0 0 24 24" fill="none" stroke="#4f5dff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg></div>
+      <div class="main">
+        <div class="t" style="font-size:15px">下载中心</div>
+        <div class="s">校长端 / 教师端 / 学管端　分别独立下载</div>
+      </div>
+      <div class="go">前往 ›</div>
+    </a>
+  </div>
 </div>
+<script>
+/* 分享链接带 ?sharecode=，点击内部跳转时自动带上，避免子页面 403 */
+(function(){
+  try{
+    var sc=new URLSearchParams(location.search).get('sharecode');
+    if(!sc)return;
+    document.addEventListener('click',function(e){
+      var a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
+      if(!a)return;
+      var href=a.getAttribute('href')||'';
+      if(href.indexOf('://')>-1||href.charAt(0)==='#'||href.indexOf('mailto:')===0)return;
+      if(/\?sharecode=/.test(href))return;
+      var u=new URL(href,location.href);
+      u.searchParams.set('sharecode',sc);
+      a.href=u.pathname+u.search;
+    });
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

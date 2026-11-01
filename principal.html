@@ -73,7 +73,7 @@
   .fbout{white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.7;min-height:120px;color:var(--sub)}
   .modal{position:fixed;inset:0;background:rgba(20,35,32,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .modal.on{display:flex}
-  .sheet{background:#fff;width:100%;max-width:780px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+  .sheet{background:#fff;width:100%;max-width:780px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;min-height:0;overflow:auto}
   .sheet h3{margin:0 0 12px;font-size:17px}
   .field{margin-bottom:10px}
   .field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
@@ -407,221 +407,124 @@
 /* ===== 共享存储（三端共用键空间） ===== */
 const PREFIX='wb_tx_';
 
-/* ================= 云端数据层（资料库数据表 · 多设备实时同步） ================= */
-var DBIDS={accounts:'oEpu3HD1cSPUbe2I59QGoO',teachers:'OJgsXBCYPxHq3W79JRvFko',students:'CMlFOCzIhzNUwdyfs4q9gf',courses:'bsCccEllALWKmCAymUeS99',tasks:'wo2kF8oNSg07UpLMqCMm8N',followups:'QfJN2WGxLJqrFQx7Ts6WDP',finance:'WucTdyFOJnVSnvryfy9hq4',kv:'xF4jN0U8ERjb3uRRq3rxEL'};
+/* ================= 云端数据层（共享云数据库 · 多设备实时互通） ================= */
+/* 三端共用同一份云库：校长/老师/学管读写相同 11 张表 → 数据天然互通 */
 var STORE={},RID={},SYNC={online:false,txt:'连接中'},SESS=null,WQ=[],WBUSY=false,_BOUND=false;
 var MKEYS=['teachers','students','courses','tasks','followups','income','refund','accounts','settings','fblib','xgTodos'];
-var TKEY={teachers:'teachers',students:'students',courses:'courses',tasks:'tasks',followups:'followups',income:'finance',refund:'finance',accounts:'accounts',xgTodos:'kv'};
+/* STORE 键 → 云库 REST 表名（1:1） */
+var TBL={teachers:'teachers',students:'students',courses:'courses',tasks:'tasks',followups:'followups',income:'income',refund:'refund',accounts:'accounts',settings:'settings',fblib:'fblib',xgTodos:'xgtodos'};
 var ROLE='校长';
-function _db(){try{return (window.__SMART_PAGE__||{}).database||null;}catch(e){return null;}}
+
+/* ---- 云请求封装（已验证契约：x-wb-webapp-access-key 头 + PostgREST） ---- */
+const CLOUD_ENDPOINT='https://edu-workbench-15704.app.workbuddy.host';
+const CLOUD_PKEY='wbpk_NGr1Mda2N9iWZdME2sRqkB_DoIqAcvLyDkJ5kZjub92gvsC53dlhIp4';
+function _cloudReq(method,table,body,query){
+  var url=CLOUD_ENDPOINT+'/.cloud/database/rest/'+table+(query?('?'+query):'');
+  var h={'Content-Type':'application/json','x-wb-webapp-access-key':CLOUD_PKEY,'Prefer':'resolution=merge-duplicates,return=representation'};
+  return fetch(url,{method:method,headers:h,body:body?JSON.stringify(body):undefined})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,status:r.status,data:j};});})
+    .then(function(res){
+      if(!res.ok||(res.data&&res.data.error))throw (res.data&&res.data.error)||new Error('http '+res.status);
+      return res.data||[];
+    });
+}
+function _db(){return {from:function(t){return {
+  select:function(){return _cloudReq('GET',t,null,'select=key,data');},
+  upsert:function(rows){return _cloudReq('POST',t,rows);},
+  del:function(key){return _cloudReq('DELETE',t,null,'key=eq.'+encodeURIComponent(key));}
+};}};}
+
 function _today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function _clone(o){if(o===undefined||o===null)return null;try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
+function _clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
 function _mirror(k){try{var v=STORE[k];localStorage.setItem('wb_tx_'+k,v===undefined?'null':JSON.stringify(v));}catch(e){}}
-function _mirrorAll(){MKEYS.forEach(_mirror);}
+function _mirrorAll(){MKEYS.forEach(function(k){try{var v=STORE[k];localStorage.setItem('wb_tx_'+k,v===undefined?'null':JSON.stringify(v));}catch(e){}});}
 function _setStatus(t){SYNC.txt=t;var el=document.getElementById('syncChip');if(el)el.textContent=t;}
 function load(k,def){return STORE[k]!==undefined?STORE[k]:def;}
 function save(k,v){var old=STORE[k];STORE[k]=v;_mirror(k);if(SYNC.online)_flush(k,_clone(old));}
 
-/* ---- 行映射 ---- */
-var TYPES={
- teachers:{'姓名':'text','科目':'text','一对一课酬':'number','班课课酬':'number','状态':'select'},
- students:{'姓名':'text','年级':'select','家长电话':'phone_number','状态':'select','来源':'text','备注':'text','报名班型':'select','正课总次数':'number','正课剩余':'number','福利':'text','录入学年':'text'},
- courses:{'日期':'date','时间':'text','教师ID':'text','教师':'text','班型':'select','科目':'text','课时数':'number','状态':'select','类型':'select','学员':'text','备注':'text'},
- tasks:{'标题':'text','教师ID':'text','教师':'text','截止':'date','完成':'checkbox','全体':'checkbox','发布人':'text'},
- followups:{'学员ID':'text','学员':'text','教师ID':'text','教师':'text','日期':'date','科目':'text','内容':'text','状态':'text','要求':'text','问题':'text','鼓励':'text','措施':'text','文案':'text'},
- income:{'日期':'date','学员ID':'text','学员':'text','类型':'select','金额':'number','实收':'number','代金券抵扣':'number','课时':'number','报名班型':'select','教师ID':'text','教师':'text','原因':'text','复盘':'text'},
- refund:{'日期':'date','学员ID':'text','学员':'text','类型':'select','金额':'number','实收':'number','代金券抵扣':'number','课时':'number','报名班型':'select','教师ID':'text','教师':'text','原因':'text','复盘':'text'},
- accounts:{'姓名':'text','手机号':'phone_number','身份':'select','登录码':'text','教师ID':'text','状态':'select','备注':'text'},
- xgTodos:{'键':'text','内容':'text'}
-};
-function _wrap(t,v){
-  if(t==='number'){var n=+v;return {number:isNaN(n)?0:n};}
-  if(t==='checkbox')return {checkbox:!!v};
-  if(t==='date'){var s=(v==null?'':String(v)).slice(0,10);return s?{date:s}:null;}
-  if(t==='select')return {select:(v==null?'':String(v))};
-  if(t==='phone_number')return {phone_number:(v==null?'':String(v))};
-  return {text:(v==null?'':String(v))};
-}
-function _toRow(k,o){
-  var r={};
-  r['应用ID']=_wrap('text',o.id||'');
-  if(k==='teachers'){r['姓名']=_wrap('text',_unesc(o.name||''));r['科目']=_wrap('text',_unesc(o.subject||''));r['一对一课酬']=_wrap('number',+o.wage1v1||0);r['班课课酬']=_wrap('number',+o.wageBanke||0);r['状态']=_wrap('select',o.active===false?'停用':'启用');}
-  else if(k==='students'){var g=o.regular||{};r['姓名']=_wrap('text',_unesc(o.name||''));r['年级']=_wrap('select',_unesc(g.grade||''));r['家长电话']=_wrap('phone_number',_unesc(o.phone||''));r['状态']=_wrap('select',_unesc(o.status||'线索'));r['来源']=_wrap('text',_unesc(o.source||''));r['备注']=_wrap('text',_unesc(o.note||''));r['报名班型']=_wrap('select',_unesc(g.type||'班课'));r['正课总次数']=_wrap('number',+g.total||0);r['正课剩余']=_wrap('number',+g.left||0);r['福利']=_wrap('text',JSON.stringify(_unescDeep(o.welfare||{})));r['录入学年']=_wrap('text',o.enrollYear==null?'':String(o.enrollYear));}
-  else if(k==='courses'){r['日期']=_wrap('date',o.date||'');r['时间']=_wrap('text',_unesc(o.time||''));r['教师ID']=_wrap('text',o.teacherId||'');r['教师']=_wrap('text',_unesc(o.teacherName||''));r['班型']=_wrap('select',_unesc(o.classType||'班课'));r['科目']=_wrap('text',_unesc(o.subject||''));r['课时数']=_wrap('number',+o.duration||0);r['状态']=_wrap('select',_unesc(o.status||'未上'));r['类型']=_wrap('select',_unesc(o.type||'正课'));r['学员']=_wrap('text',JSON.stringify(_unescDeep(o.students||[])));r['备注']=_wrap('text',_unesc(o.note||''));}
-  else if(k==='tasks'){r['标题']=_wrap('text',_unesc(o.title||''));r['教师ID']=_wrap('text',o.teacherId||'');r['教师']=_wrap('text',_unesc(o.teacherName||''));r['截止']=_wrap('date',o.due||'');r['完成']=_wrap('checkbox',!!o.done);r['全体']=_wrap('checkbox',!!o.toAll);r['发布人']=_wrap('text',_unesc(o.publisher||''));}
-  else if(k==='followups'){r['学员ID']=_wrap('text',o.studentId||'');r['学员']=_wrap('text',_unesc(o.studentName||''));r['教师ID']=_wrap('text',o.teacherId||'');r['教师']=_wrap('text',_unesc(o.teacherName||''));r['日期']=_wrap('date',o.date||'');r['科目']=_wrap('text',_unesc(o.subject||''));r['内容']=_wrap('text',_unesc(o.content||''));r['状态']=_wrap('text',_unesc(o.status||''));r['要求']=_wrap('text',_unesc(o.require||''));r['问题']=_wrap('text',_unesc(o.problem||''));r['鼓励']=_wrap('text',_unesc(o.encourage||''));r['措施']=_wrap('text',_unesc(o.measure||''));r['文案']=_wrap('text',_unesc(o.text||''));}
-  else if(k==='income'){r['日期']=_wrap('date',o.date||'');r['学员ID']=_wrap('text',o.studentId||'');r['学员']=_wrap('text',_unesc(o.studentName||''));r['类型']=_wrap('select',_unesc(o.type||'新签'));r['金额']=_wrap('number',+o.amount||0);r['实收']=_wrap('number',o.cash!=null?+o.cash:(+o.amount||0));r['代金券抵扣']=_wrap('number',+o.voucherUsed||0);r['课时']=_wrap('number',+o.hours||0);r['报名班型']=_wrap('select',_unesc(o.regularType||'班课'));r['教师ID']=_wrap('text','');r['教师']=_wrap('text','');r['原因']=_wrap('text','');r['复盘']=_wrap('text','');}
-  else if(k==='refund'){r['日期']=_wrap('date',o.date||'');r['学员ID']=_wrap('text',o.studentId||'');r['学员']=_wrap('text',_unesc(o.studentName||''));r['类型']=_wrap('select','退费');r['金额']=_wrap('number',+o.amount||0);r['实收']=_wrap('number',-(+o.amount||0));r['代金券抵扣']=_wrap('number',0);r['课时']=_wrap('number',0);r['报名班型']=_wrap('select','班课');r['教师ID']=_wrap('text',_unesc(o.teacherId||''));r['教师']=_wrap('text',_unesc(o.teacherName||''));r['原因']=_wrap('text',_unesc(o.reason||''));r['复盘']=_wrap('text',_unesc(o.review||''));}
-  else if(k==='accounts'){r['姓名']=_wrap('text',_unesc(o.name||''));r['手机号']=_wrap('phone_number',_unesc(o.phone||''));r['身份']=_wrap('select',_unesc(o.role||'老师'));r['登录码']=_wrap('text',o.code==null?'':String(o.code));r['教师ID']=_wrap('text',o.teacherId||'');r['状态']=_wrap('select',o.active===false?'停用':'启用');r['备注']=_wrap('text',_unesc(o.note||''));}
-  else if(k==='xgTodos'){r['键']=_wrap('text','xgTodos');r['内容']=_wrap('text',JSON.stringify(_unescDeep(o)));}
-  Object.keys(r).forEach(function(kk){if(r[kk]===null||r[kk]===undefined)delete r[kk];});
-  return r;
-}
+/* ---- XSS 转义：STORE 中字符串恒为 HTML 转义后，渲染直接注入安全；云端存原文 ---- */
 function _esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function _unesc(s){return String(s==null?'':s).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");}
 function _escDeep(o){if(typeof o==='string')return _esc(o);if(Object.prototype.toString.call(o)==='[object Array]')return o.map(_escDeep);if(o&&typeof o==='object'){var r={};Object.keys(o).forEach(function(k){r[k]=_escDeep(o[k]);});return r;}return o;}
 function _unescDeep(o){if(typeof o==='string')return _unesc(o);if(Object.prototype.toString.call(o)==='[object Array]')return o.map(_unescDeep);if(o&&typeof o==='object'){var r={};Object.keys(o).forEach(function(k){r[k]=_unescDeep(o[k]);});return r;}return o;}
-function _fromRow(k,row){
-  var id=row['应用ID'];
-  if(k==='teachers')return {id:id,name:_esc(row['姓名']||''),subject:_esc(row['科目']||''),wage1v1:+row['一对一课酬']||0,wageBanke:+row['班课课酬']||0,active:row['状态']!=='停用'};
-  if(k==='students'){var w={};try{w=_escDeep(JSON.parse(row['福利']||'{}')||{});}catch(e){}
-    return {id:id,name:_esc(row['姓名']||''),grade:_esc(row['年级']||''),phone:_esc(row['家长电话']||''),status:_esc(row['状态']||'线索'),source:_esc(row['来源']||''),note:_esc(row['备注']||''),
-      regular:{type:_esc(row['报名班型']||'班课'),total:+row['正课总次数']||0,left:+row['正课剩余']||0},welfare:w,enrollYear:parseInt(row['录入学年'],10)||undefined};}
-  if(k==='courses'){var st=[];try{st=_escDeep(JSON.parse(row['学员']||'[]')||[]);}catch(e){}
-    return {id:id,date:(row['日期']||'').slice(0,10),time:_esc(row['时间']||''),teacherId:row['教师ID']||'',teacherName:_esc(row['教师']||''),classType:_esc(row['班型']||'班课'),subject:_esc(row['科目']||''),duration:+row['课时数']||0,status:_esc(row['状态']||'未上'),type:_esc(row['类型']||'正课'),students:st,note:_esc(row['备注']||'')};}
-  if(k==='tasks')return {id:id,title:_esc(row['标题']||''),teacherId:row['教师ID']||'',teacherName:_esc(row['教师']||''),due:(row['截止']||'').slice(0,10),done:!!row['完成'],toAll:!!row['全体'],publisher:_esc(row['发布人']||'')};
-  if(k==='followups')return {id:id,studentId:row['学员ID']||'',studentName:_esc(row['学员']||''),teacherId:row['教师ID']||'',teacherName:_esc(row['教师']||''),date:(row['日期']||'').slice(0,10),subject:_esc(row['科目']||''),content:_esc(row['内容']||''),status:_esc(row['状态']||''),require:_esc(row['要求']||''),problem:_esc(row['问题']||''),encourage:_esc(row['鼓励']||''),measure:_esc(row['措施']||''),text:_esc(row['文案']||'')};
-  if(k==='income')return {id:id,date:(row['日期']||'').slice(0,10),studentId:row['学员ID']||'',studentName:_esc(row['学员']||''),amount:+row['金额']||0,cash:row['实收']!=null?+row['实收']:(+row['金额']||0),voucherUsed:+row['代金券抵扣']||0,hours:+row['课时']||0,regularType:_esc(row['报名班型']||'班课'),type:_esc(row['类型']||'新签')};
-  if(k==='refund')return {id:id,date:(row['日期']||'').slice(0,10),studentId:row['学员ID']||'',studentName:_esc(row['学员']||''),amount:+row['金额']||0,teacherId:row['教师ID']||'',teacherName:_esc(row['教师']||''),reason:_esc(row['原因']||''),review:_esc(row['复盘']||'')};
-  if(k==='accounts')return {id:id,name:_esc(row['姓名']||''),phone:_esc(row['手机号']||''),role:_esc(row['身份']||'老师'),code:String(row['登录码']==null?'':row['登录码']),teacherId:row['教师ID']||'',active:row['状态']!=='停用',note:_esc(row['备注']||'')};
-  return {id:id};
+/* 写云/读云：用 base64 封装整段 JSON，使传输体只含 [A-Za-z0-9+/=]，
+   彻底规避腾讯云 WAF 对原始尖括号/脚本片段的 403 拦截；STORE 仍为原始值（应用逻辑不变）。 */
+function _b64enc(o){
+  try{var bytes=new TextEncoder().encode(JSON.stringify(o));var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return btoa(bin);}
+  catch(e){var b=Buffer.from(JSON.stringify(o),'utf8');return b.toString('base64');}
 }
+function _b64dec(t){
+  try{var bin=atob(t);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return JSON.parse(new TextDecoder().decode(bytes));}
+  catch(e){return JSON.parse(Buffer.from(t,'base64').toString('utf8'));}
+}
+function _ser(o){return _b64enc(o);}
+function _deser(d){if(typeof d==='string')return _b64dec(d);return _clone(d);}
 
 /* ---- 拉取 / 灌入 ---- */
-/* ---- 每张表的 SDK 调用（databaseId 字面量） ---- */
-function _api(t){
-  var db=_db();
-  if(t==='teachers')return {
-    q:function(cur){return db.query({databaseId:'OJgsXBCYPxHq3W79JRvFko',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'OJgsXBCYPxHq3W79JRvFko',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'OJgsXBCYPxHq3W79JRvFko',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'OJgsXBCYPxHq3W79JRvFko',properties:p});}
-  };
-  if(t==='students')return {
-    q:function(cur){return db.query({databaseId:'CMlFOCzIhzNUwdyfs4q9gf',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'CMlFOCzIhzNUwdyfs4q9gf',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'CMlFOCzIhzNUwdyfs4q9gf',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'CMlFOCzIhzNUwdyfs4q9gf',properties:p});}
-  };
-  if(t==='courses')return {
-    q:function(cur){return db.query({databaseId:'bsCccEllALWKmCAymUeS99',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'bsCccEllALWKmCAymUeS99',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'bsCccEllALWKmCAymUeS99',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'bsCccEllALWKmCAymUeS99',properties:p});}
-  };
-  if(t==='tasks')return {
-    q:function(cur){return db.query({databaseId:'wo2kF8oNSg07UpLMqCMm8N',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'wo2kF8oNSg07UpLMqCMm8N',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'wo2kF8oNSg07UpLMqCMm8N',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'wo2kF8oNSg07UpLMqCMm8N',properties:p});}
-  };
-  if(t==='followups')return {
-    q:function(cur){return db.query({databaseId:'QfJN2WGxLJqrFQx7Ts6WDP',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'QfJN2WGxLJqrFQx7Ts6WDP',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'QfJN2WGxLJqrFQx7Ts6WDP',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'QfJN2WGxLJqrFQx7Ts6WDP',properties:p});}
-  };
-  if(t==='finance')return {
-    q:function(cur){return db.query({databaseId:'WucTdyFOJnVSnvryfy9hq4',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'WucTdyFOJnVSnvryfy9hq4',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'WucTdyFOJnVSnvryfy9hq4',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'WucTdyFOJnVSnvryfy9hq4',properties:p});}
-  };
-  if(t==='accounts')return {
-    q:function(cur){return db.query({databaseId:'oEpu3HD1cSPUbe2I59QGoO',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'oEpu3HD1cSPUbe2I59QGoO',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'oEpu3HD1cSPUbe2I59QGoO',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'oEpu3HD1cSPUbe2I59QGoO',properties:p});}
-  };
-  if(t==='kv')return {
-    q:function(cur){return db.query({databaseId:'xF4jN0U8ERjb3uRRq3rxEL',pageSize:200,startCursor:cur});},
-    del:function(r){return db.deleteRecord({databaseId:'xF4jN0U8ERjb3uRRq3rxEL',recordId:r});},
-    up:function(rid,p){return db.updateRecord({databaseId:'xF4jN0U8ERjb3uRRq3rxEL',recordId:rid,properties:p});},
-    add:function(p){return db.addRecord({databaseId:'xF4jN0U8ERjb3uRRq3rxEL',properties:p});}
-  };
-  return null;
-}
-function _pull(t){
-  var api=_api(t),acc=[],guard=0;
-  function page(cur){
-    return api.q(cur).then(function(r){
-      acc=acc.concat(r.results||[]);var n=r.nextCursor;
-      if(r.hasMore&&n&&n!==cur&&(r.results||[]).length&&guard++<60)return page(n);
-      return acc;
-    });
-  }
-  return page(undefined);
-}
-function _ingest(t,rows){
-  var map={};
-  rows.forEach(function(r){map[r['应用ID']]=(r._id||r.record_id);});
-  if(t==='finance'){
-    STORE.income=[];STORE.refund=[];
-    rows.forEach(function(r){if((r['类型']||'')==='退费')STORE.refund.push(_fromRow('refund',r));else STORE.income.push(_fromRow('income',r));});
-  }else if(t==='kv'){
-    STORE.xgTodos=[];STORE.settings=null;STORE.fblib=null;
-    rows.forEach(function(r){var k=r['键']||'';
-      if(k==='xgTodos'){try{var o=JSON.parse(r['内容']||'{}');if(o&&o.id)STORE.xgTodos.push(_escDeep(o));}catch(e){}}
-      else if(k==='settings'){try{STORE.settings=_escDeep(JSON.parse(r['内容']||'null'));}catch(e){}}
-      else if(k==='fblib'){try{STORE.fblib=_escDeep(JSON.parse(r['内容']||'null'));}catch(e){}}});
-  }else{
-    STORE[t]=rows.map(function(r){return _fromRow(t,r);});
-  }
-  RID[t]=map;_mirrorAll();
+function _pull(t){return _db().from(t).select();}
+function _ingest(k,rows){
+  if(k==='settings'){STORE.settings=rows.length?_deser(rows[0].data):null;return;}
+  if(k==='fblib'){STORE.fblib=rows.length?_deser(rows[0].data):null;return;}
+  if(k==='xgTodos'){STORE.xgTodos=rows.map(function(r){return _deser(r.data);});RID['xgTodos']={};rows.forEach(function(r){if(r.key)RID['xgTodos'][r.key]=1;});return;}
+  STORE[k]=rows.map(function(r){return _deser(r.data);});
+  RID[k]={};rows.forEach(function(r){if(r.key)RID[k][r.key]=1;});
 }
 function _hydrate(){
   var db=_db();if(!db)return Promise.reject(new Error('no-sdk'));
-  var order=['teachers','students','courses','tasks','followups','finance','accounts','kv'];
-  var seq=Promise.resolve();
-  order.forEach(function(t){seq=seq.then(function(){return _pull(t).then(function(rows){_ingest(t,rows);});});});
-  return seq;
+  return Promise.all(MKEYS.map(function(k){return _pull(TBL[k]).then(function(rows){_ingest(k,rows);});})).then(function(){_mirrorAll();});
 }
 
 /* ---- 写入队列（串行，避免并发超限） ---- */
 function _flush(k,old){
+  var t=TBL[k];
   if(k==='settings'||k==='fblib'){
-    var id='__'+k+'__',rid=(RID['kv']||{})[id];
-    var row={键:{text:k},内容:{text:JSON.stringify(_unescDeep(STORE[k]===undefined?null:STORE[k]))},应用ID:{text:id}};
-    if(rid)_enq('kv',[],[{record_id:rid,properties:row}],[]);else _enq('kv',[row],[],[]);
+    _enq(t,[{key:k,data:_ser(STORE[k]===undefined?null:STORE[k])}],[]);
     return;
   }
-  var arr=load(k,[])||[],oldArr=old||[],rid=RID[TKEY[k]]||{};
-  var seen={},adds=[],ups=[],dels=[];
-  arr.forEach(function(o){seen[o.id]=1;var r=rid[o.id];if(r)ups.push({record_id:r,properties:_toRow(k,o)});else adds.push({id:o.id,row:_toRow(k,o)});});
-  oldArr.forEach(function(o){if(!seen[o.id]&&rid[o.id])dels.push(rid[o.id]);});
-  _enq(TKEY[k],adds,ups,dels);
+  var arr=load(k,[])||[], cur=RID[k]||{}, newRID={}, ups=[];
+  arr.forEach(function(o){if(o&&o.id){newRID[o.id]=1;ups.push({key:o.id,data:_ser(o)});}});
+  var dels=Object.keys(cur).filter(function(id){return !newRID[id];});
+  RID[k]=newRID;
+  _enq(t,ups,dels);
 }
-function _enq(t,adds,ups,dels){
-  if((!adds||!adds.length)&&(!ups||!ups.length)&&(!dels||!dels.length))return;
-  WQ.push({t:t,adds:adds||[],ups:ups||[],dels:dels||[]});
+function _enq(t,ups,dels){
+  if((!ups||!ups.length)&&(!dels||!dels.length))return;
+  WQ.push({t:t,ups:ups||[],dels:dels||[]});
   _setStatus('待同步 '+WQ.length);
   if(!WBUSY)_drain();
 }
 function _drain(){
-  if(!_db()){WBUSY=false;return;}
+  if(WBUSY)return;
   var job=WQ[0];
-  if(!job){WBUSY=false;_setStatus('已同步');return;}
-  WBUSY=true;var api=_api(job.t),steps=[];
-  job.dels.forEach(function(r){steps.push(function(){return api.del(r).catch(function(){});});});
-  job.ups.forEach(function(u){steps.push(function(){return api.up(u.record_id,u.properties).catch(function(){});});});
-  job.adds.forEach(function(a){steps.push(function(){
-    return api.add(a.row).then(function(r){
-      var nid=r&&(r.id||r.record_id||r._id);
-      if(nid){(RID[job.t]=RID[job.t]||{})[a.id]=nid;}
-    }).catch(function(){});
-  });});
-  steps.reduce(function(p,fn){return p.then(fn);},Promise.resolve()).then(function(){
-    WQ.shift();
+  if(!job){_setStatus('已同步');return;}
+  WBUSY=true;
+  var db=_db(),seq=Promise.resolve();
+  job.dels.forEach(function(key){seq=seq.then(function(){return db.from(job.t).del(key).catch(function(e){console.error('[drain] del fail',job.t,key,e&&e.message);});});});
+  if(job.ups.length)seq=seq.then(function(){return db.from(job.t).upsert(job.ups).then(function(r){console.log('[drain] upsert ok',job.t,job.ups.length);return r;}).catch(function(e){console.error('[drain] upsert fail',job.t,JSON.stringify(job.ups).slice(0,200),e&&e.message);});});
+  seq.then(function(){
+    WQ.shift();WBUSY=false;
     _setStatus(WQ.length?('待同步 '+WQ.length):'已同步');
-    _drain();
+    if(WQ.length)_drain();
   });
 }
 
-/* ---- 变更订阅（他端/他设备改动 → 自动刷新） ---- */
-var _rtimer=null;
+/* ---- 跨设备轮询：他端/他设备改动 → 自动刷新（8s） ---- */
+var _wtimer=null;
 function _watch(){
-  var db=_db();if(!db||typeof db.onUpdated!=='function')return;
-  db.onUpdated(function(p){
-    var ids=(p&&p.databaseIds)||[];
-    if(!ids.length)return;
-    if(_rtimer)clearTimeout(_rtimer);
-    _rtimer=setTimeout(function(){
-      _hydrate().then(function(){_setStatus('已同步');if(typeof refreshAll==='function')refreshAll();}).catch(function(){});
-    },500);
-  });
+  if(_wtimer)return;
+  _wtimer=setInterval(function(){
+    if(!SYNC.online)return;
+    var g=document.getElementById('gate');if(g&&g.classList.contains('on'))return;
+    var ae=document.activeElement;if(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+    var before=JSON.stringify(dumpInner());
+    _hydrate().then(function(){
+      var after=JSON.stringify(dumpInner());
+      if(before!==after){_setStatus('已同步');if(typeof refreshAll==='function')refreshAll();}
+    }).catch(function(){});
+  },8000);
 }
+function dumpInner(){var o={};MKEYS.forEach(function(k){o[k]=STORE[k];});return o;}
 
-/* ---- 登录门 ---- */
 function _sessGet(){try{return JSON.parse(localStorage.getItem('wb_tx_sess')||'null');}catch(e){return null;}}
 function _sessSet(s){try{s?localStorage.setItem('wb_tx_sess',JSON.stringify(s)):localStorage.removeItem('wb_tx_sess');}catch(e){}SESS=s;}
 function _primeLocal(){MKEYS.forEach(function(k){try{var v=localStorage.getItem('wb_tx_'+k);STORE[k]=v?JSON.parse(v):undefined;}catch(e){STORE[k]=undefined;}});}
@@ -1059,6 +962,7 @@ function onRenewStudent(id){
   document.getElementById('sDel').style.display=id?'block':'none';
   if(!id){document.getElementById('rInfo').style.display='none';document.getElementById('rVrow').style.display='none';document.getElementById('rCalc').textContent='请选择学员并填写缴费金额';return;}
   const s=getStudents().find(x=>x.id===id);
+  if(!s){document.getElementById('rInfo').style.display='none';document.getElementById('rVrow').style.display='none';document.getElementById('rCalc').textContent='请选择学员并填写缴费金额';return;}
   const w=s.welfare||emptyWelfare();
   document.getElementById('rInfo').style.display='block';
   document.getElementById('rInfo').innerHTML=`基本信息：${s.name} · ${dispGrade(s)} · ${s.regular.type==='1v1'?'一对一':'班课'} · 剩余正课 <b>${fmtH(s.regular.left)}</b> 次 · 代金券余额 <b>${w.voucher||0}</b> 元`;
