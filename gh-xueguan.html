@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#059669">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -59,9 +59,12 @@
   .catbox .ct{font-size:12px;color:var(--sub);margin:8px 0 4px;display:flex;align-items:center;gap:8px}
   .catbox .ct input{flex:1;font-size:13px;padding:6px 8px}
   .fbout{white-space:pre-wrap;background:#f4f6fd;border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.7;min-height:120px;color:var(--sub)}
-  .modal{position:fixed;inset:0;background:rgba(20,26,46,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal{position:fixed;top:0;left:0;right:0;bottom:auto;height:100vh;height:100dvh;background:rgba(20,26,46,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .modal.on{display:flex}
-  .sheet{background:#fff;width:100%;max-width:760px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;min-height:0;overflow:auto}
+  .sheet{background:#fff;width:100%;max-width:760px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;max-height:88dvh;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* ---- 手机端：弹窗底部按钮吸底 + 视口自适应（软键盘/浏览器工具栏不遮按钮） ---- */
+  .sheet>.row:last-child{position:sticky;bottom:0;z-index:3;background:#fff;padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin-top:12px;border-top:1px solid var(--line,#e5e7eb)}
+  .btn,.sgb,.tab,.chip,.closeX{touch-action:manipulation}
   .sheet h3{margin:0 0 12px;font-size:17px}
   .field{margin-bottom:10px}
   .field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px}
@@ -828,6 +831,43 @@ if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
     }
     navigator.serviceWorker.register('sw.js?sharecode='+encodeURIComponent(sc),{scope:'./'}).catch(function(){});
   }catch(e){}
+})();
+</script>
+<script>
+/* ===== 手机端弹窗自适应：跟随可视视口（软键盘 / 浏览器工具栏 / 地址栏） ===== */
+(function(){
+  function vp(){var v=window.visualViewport;return {h:(v&&v.height)?v.height:(window.innerHeight||document.documentElement.clientHeight||0),t:(v&&v.offsetTop)?v.offsetTop:0};}
+  function fit(){
+    var ms=document.querySelectorAll('.modal.on');
+    if(!ms.length)return;
+    var p=vp(),h=p.h;if(!h||h<160)return;
+    for(var i=0;i<ms.length;i++){
+      var m=ms[i];
+      m.style.top=p.t+'px';m.style.bottom='auto';m.style.height=h+'px';
+      var s=m.querySelector('.sheet');
+      if(s)s.style.maxHeight=Math.max(200,Math.round(h*0.92))+'px';
+    }
+  }
+  function bind(){
+    var ms=document.querySelectorAll('.modal');
+    for(var i=0;i<ms.length;i++){(function(m){
+      if(m.__mf)return;m.__mf=1;
+      try{new MutationObserver(function(){if(m.classList.contains('on'))fit();}).observe(m,{attributes:true,attributeFilter:['class']});}catch(e){}
+    })(ms[i]);}
+  }
+  function boot(){bind();fit();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
+  window.addEventListener('resize',fit,{passive:true});
+  window.addEventListener('orientationchange',function(){setTimeout(fit,150);});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',fit,{passive:true});
+    window.visualViewport.addEventListener('scroll',fit,{passive:true});
+  }
+  document.addEventListener('focusin',function(e){if(e.target&&e.target.closest&&e.target.closest('.modal')){setTimeout(fit,120);setTimeout(fit,340);}},true);
+  document.addEventListener('focusout',function(e){if(e.target&&e.target.closest&&e.target.closest('.modal')){setTimeout(fit,120);setTimeout(fit,340);}},true);
+  /* 点弹窗外的暗色区域即可关闭，避免小屏下只能靠右上角 × */
+  document.addEventListener('click',function(e){if(e.target&&e.target.classList&&e.target.classList.contains('modal'))e.target.classList.remove('on');},true);
+  window._fitModal=fit;
 })();
 </script>
 </body>

@@ -1,5 +1,5 @@
 /* 学管端 · 离线缓存 */
-const CACHE = 'wb-tx-xueguan-v1';
+const CACHE = 'wb-tx-xueguan-v2';
 const ASSETS = [
   './教培学管端.html',
   './manifest-xueguan.webmanifest',
@@ -30,6 +30,16 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   const req = e.request;
   if (req.method !== 'GET') return;
+  /* 页面导航：网络优先。发布新版本后手机刷新即可拿到最新页面，避免'缓存优先'导致改了看不到 */
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req, { cache: 'no-store' }).then(function (r) {
+        if (r && r.ok) { var cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(req, cp); }); }
+        return r;
+      }).catch(function () { return caches.match(req, { ignoreSearch: true }); })
+    );
+    return;
+  }
   e.respondWith(
     caches.match(req).then(function (hit) {
       if (hit) {
